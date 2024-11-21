@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Image from 'next/image'; // Fix: Ensure correct import for Image
 import { useEffect, useState } from 'react';
@@ -14,8 +14,8 @@ const FriendsTab = () => {
   const [referrals, setReferrals] = useState<string[]>([]);
 
   useEffect(() => {
-    // Remove server-side fetch and rely on WebApp user data
-    if (WebApp.initDataUnsafe?.user) {
+    // Ensure this runs only on the client side
+    if (typeof window !== "undefined" && WebApp.initDataUnsafe?.user) {
       const user = WebApp.initDataUnsafe.user as UserData;
       setUserData(user);
 
