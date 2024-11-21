@@ -16,8 +16,8 @@ const Profile = () => {
   const [userData, setUserData] = useState<UserData | null>(null)
 
   useEffect(() => {
-    // Check if the WebApp SDK is initialized and user data is available
-    if (WebApp.initDataUnsafe.user) {
+    // Ensure the code runs only in the client-side environment
+    if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
       // Set user data in state
       setUserData(WebApp.initDataUnsafe.user as UserData)
     }

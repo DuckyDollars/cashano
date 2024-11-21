@@ -9,8 +9,8 @@ const CheckFootprint = () => {
     const [profilePhoto, setProfilePhoto] = useState<string | null>(null)
 
     useEffect(() => {
-        // Check if WebApp SDK is initialized and user data is available
-        if (WebApp.initDataUnsafe.user) {
+        // Check if the code is running in the browser (window is defined)
+        if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
             const user = WebApp.initDataUnsafe.user
             setProfilePhoto(user.photo_url || '/default-profile.png') // Set profile photo or fallback image
         }
