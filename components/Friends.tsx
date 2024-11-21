@@ -1,10 +1,17 @@
-'use client';
+'use client'
 
-import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { crypto } from '@/images';
 import Image from 'next/image';
-import { TonCoin } from '@/images';
+import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
+
+// Initialize DynamoDB client with necessary credentials
+const dynamoDb = new AWS.DynamoDB.DocumentClient({
+  region: 'eu-north-1',
+  accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
+  secretAccessKey: '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'
+});
 
 interface UserData {
   id: number;
@@ -12,117 +19,217 @@ interface UserData {
 
 const FriendsTab = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [friends, setFriends] = useState<string[]>([]);
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [amount, setAmount] = useState<number | string>('');
+  const [tonBalance, setTonBalance] = useState<number>(0);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
-          const user = WebApp.initDataUnsafe.user as UserData;
-          setUserData(user);
-
-          // Initialize DynamoDB Client
-          const client = new DynamoDBClient({
-            region: "eu-north-1",
-            credentials: {
-              accessKeyId: "AKIAUJ3VUKANTQKUIAXV",
-              secretAccessKey: "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",
-            },
-          });
-
-          // Query the DynamoDB Table
-          const command = new QueryCommand({
-            TableName: "PandaPals",
-            KeyConditionExpression: "UserID = :userId",
-            ExpressionAttributeValues: {
-              ":userId": { S: `${user.id}` },
-            },
-          });
-
-          const data = await client.send(command);
-          const items = data.Items || [];
-
-          const friendsList = items.length > 0 && items[0].friends && Array.isArray(items[0].friends.L)
-          ? items[0].friends.L.map((friend) => (friend && friend.S ? friend.S : ""))
-          : [];
-        
-            setFriends(friendsList);
-
-        }
-      } catch (error) {
-        console.error('Error fetching friends:', error);
-      }
-    };
-
-    fetchFriends();
+    // Ensure the code runs only in the client-side environment
+    if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
+      setUserData(WebApp.initDataUnsafe.user as UserData);
+    }
   }, []);
 
-  const handleInvite = () => {
+  useEffect(() => {
+    // Fetch wallet address and TON balance when user data is available
     if (userData) {
-      const inviteLink = `https://t.me/CashCraaze_bot/start?startapp=${userData.id}`;
-      navigator.clipboard.writeText(inviteLink);
-      alert('Invite link copied!');
+      const fetchData = async () => {
+        const wallet = await getWalletAddress(userData.id);
+        setWalletAddress(wallet);
+
+        // Fetch TON balance from DynamoDB
+        const balance = await getTonBalance(userData.id);
+        setTonBalance(balance);
+      };
+      fetchData();
+    }
+  }, [userData]);
+
+  // Fetch wallet address from DynamoDB
+  const getWalletAddress = async (userId: number) => {
+    const params = {
+      TableName: 'PandaPals',
+      Key: { UserID: userId },
+    };
+
+    try {
+      const result = await dynamoDb.get(params).promise();
+      return result.Item ? result.Item.walletAddress : 'No address found';
+    } catch (error) {
+      console.error('Error fetching wallet address:', error);
+      return 'Error fetching address';
     }
   };
 
+  // Fetch TON balance from DynamoDB
+  const getTonBalance = async (userId: number) => {
+    const params = {
+      TableName: 'PandaPals',
+      Key: { UserID: userId },
+    };
+
+    try {
+      const result = await dynamoDb.get(params).promise();
+      return result.Item ? result.Item.TonBalance : 0;
+    } catch (error) {
+      console.error('Error fetching TON balance:', error);
+      return 0;
+    }
+  };
+
+  // Handle amount input change
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAmount(value);
+
+    // Enable button if amount is 250 or higher
+    if (Number(value) >= 250) {
+      setIsButtonEnabled(true);
+      setErrorMessage('');
+    } else {
+      setIsButtonEnabled(false);
+      setErrorMessage('Minimum Invest = 250');
+    }
+  };
+
+  // Handle "Generate Transaction" click
+  const handleGenerateTransaction = async () => {
+    if (Number(amount) < 250) {
+      setErrorMessage('Minimum Invest = 250');
+      return;
+    }
+
+    // Check if the user has sufficient balance
+    if (tonBalance < Number(amount)) {
+      setErrorMessage('Insufficient balance');
+      return;
+    }
+
+    // Show confirmation popup
+    setShowConfirmationPopup(true);
+  };
+
+  // Handle confirmation action
+  const handleConfirmTransaction = async () => {
+    // Proceed with the transaction logic (e.g., save data to DynamoDB)
+    const transactionData = {
+      TableName: 'PandaPals',
+      Key: { UserID: userData!.id },
+      UpdateExpression: 'SET monthlyInvest = list_append(monthlyInvest, :newInvest)',
+      ExpressionAttributeValues: {
+        ':newInvest': [{ date: new Date().toISOString(), amount }],
+      },
+    };
+
+    try {
+      await dynamoDb.update(transactionData).promise();
+      setShowConfirmationPopup(false);
+      setErrorMessage('Transaction successful!');
+    } catch (error) {
+      console.error('Error saving transaction:', error);
+      setErrorMessage('Error occurred, please try again');
+    }
+  };
+
+  // Handle cancel action on the confirmation popup
+  const handleCancelTransaction = () => {
+    setShowConfirmationPopup(false);
+  };
+
   return (
-    <div className="friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
-      <div className="pt-8 space-y-1">
-        <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
-        <div className="text-xl">
-          <span className="font-semibold">SHARE</span>
-          <span className="ml-2 text-gray-500">YOUR INVITATION</span>
+    <div className="friends-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
+      {/* Header Section */}
+      <div className="flex justify-between items-center pt-4 w-full px-2">
+        {/* Left Icon with Text */}
+        <div className="flex items-center space-x-2">
+          <Image
+            src={crypto}
+            alt=""
+            width={32}
+            height={32}
+            className="rounded-full"
+          />
+          <span className="text-white font-semibold">Crypto</span>
         </div>
-        <div className="text-xl">
-          <span className="text-gray-500">LINK &</span>
-          <span className="ml-2 font-semibold">GET 5%</span>
-          <span className="ml-2 text-gray-500">OF</span>
-        </div>
-        <div className="text-gray-500 text-xl">FRIEND`S COMMUNICATION</div>
+
+        {/* Right Text */}
+        <span className="text-white font-semibold">Investment</span>
       </div>
 
-      {friends.length === 0 ? (
-        <div className="mt-8 mb-2">
-          <div className="bg-[#151516] w-full rounded-2xl p-8 flex flex-col items-center">
-            <Image
-              src={TonCoin}
-              alt="Paws"
-              width={171}
-              height={132}
-              className="mb-4"
-            />
-            <p className="text-xl text-[#8e8e93] text-center">
-              There is nothing else.<br />
-              Invite to get more rewards.
-            </p>
+      <div className="mt-3">
+        <p className="text-white font-semibold">Your wallet</p>
+        <div className="w-full border-2 border-white rounded-lg mt-2 p-2">
+          <p className="text-white text-sm">{walletAddress || 'Loading address...'}</p>
+        </div>
+      </div>
+      <div className="mt-3">
+        <p className="text-white font-semibold">Amount</p>
+        <input
+          type="number"
+          className="w-full border-2 border-white rounded-lg mt-2 p-2 text-sm text-black"
+          placeholder="Enter amount"
+          value={amount}
+          onChange={handleAmountChange}
+        />
+      </div>
+      {errorMessage && <p className="text-red-500 mt-2 text-center">{errorMessage}</p>}
+
+      <div className="mt-3">
+        <div className="w-full border-2 border-white rounded-lg mt-2 p-2 flex justify-between items-center">
+          <p className="text-white text-sm">Min Deposit:</p>
+          <p className="text-white text-sm">0.01 TON</p>
+        </div>
+      </div>
+
+      <div className="mt-3 bg-yellow-800 p-4 border-2 border-dotted border-[gold] rounded-lg">
+        <div className=" text-[gold] text-center py-2">
+          <p className="font-semibold">Note</p>
+        </div>
+        <div className="text-white text-sm mt-2">
+          <p>If you send an amount less than the minimum deposit, it will not be added to your account.</p>
+          <p className="mt-2">You are only allowed to send through the connected wallet. If you send from other wallets or make a deposit through exchanges, the funds will not be added to your account.</p>
+        </div>
+      </div>
+
+      {/* Generate Transaction Button */}
+      <div className="mt-5">
+        <button
+          onClick={handleGenerateTransaction}
+          disabled={!isButtonEnabled}
+          className={`w-full py-2 px-4 rounded-lg text-white font-semibold ${isButtonEnabled ? 'bg-green-600' : 'bg-gray-500'}`}
+        >
+          Generate Transaction
+        </button>
+      </div>
+
+      {/* Confirmation Popup */}
+      {showConfirmationPopup && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-4 rounded-lg w-[80%] max-w-[300px]">
+            <p className="font-semibold">Confirm Transaction</p>
+            <div className="text-sm mt-2">
+              <p>Amount: {amount} TON</p>
+            </div>
+            <div className="mt-3 flex justify-between">
+              <button
+                onClick={handleConfirmTransaction}
+                className="bg-green-600 text-white py-1 px-4 rounded-lg"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={handleCancelTransaction}
+                className="bg-gray-500 text-white py-1 px-4 rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-      ) : (
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Your Friends</h2>
-          {friends.map((friendId, index) => (
-            <div key={index} className="mb-8">
-              <h3 className="text-xl font-semibold">Friend {index + 1}</h3>
-              <ul>
-                <li className="rounded-[10px] border-[2px] border-solid border-white p-2 mb-2">
-                  User ID: {friendId}
-                </li>
-              </ul>
-            </div>
-          ))}
-        </div>
       )}
-
-      <div className="fixed bottom-[70px] left-0 right-0 py-14 flex justify-center bg-gradient-to-t from-green-500 to-teal-500">
-        <div className="w-full max-w-md px-4">
-          <button
-            className="w-full bg-[#4c9ce2] text-white py-4 rounded-xl text-lg font-medium"
-            onClick={handleInvite}
-          >
-            Invite
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
