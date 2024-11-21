@@ -1,13 +1,12 @@
-'use client'
+'use client';
 
-import { TonCoin } from '@/images';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
 
 interface UserData {
   id: number;
+  username?: string;
 }
 
 const FriendsTab = () => {
@@ -15,32 +14,20 @@ const FriendsTab = () => {
   const [referrals, setReferrals] = useState<string[]>([]);
 
   useEffect(() => {
-    // Initialize AWS SDK
-    AWS.config.update({
-      region: 'eu-north-1',
-      accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
-      secretAccessKey: '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',
-    });
-
-    const docClient = new AWS.DynamoDB.DocumentClient();
     const fetchReferrals = async () => {
       try {
-        // Get the user ID from WebApp SDK
         if (WebApp.initDataUnsafe.user) {
-          const user = WebApp.initDataUnsafe.user as UserData;
-          setUserData(user);
-
-          // Query DynamoDB
-          const params = {
-            TableName: 'PandaPals',
-            Key: { UserID: user.id },
-          };
-
-          const result = await docClient.get(params).promise();
-          if (result.Item && result.Item.friends) {
-            setReferrals(result.Item.friends); // Update referrals if friends exist
-          }
+          setUserData(WebApp.initDataUnsafe.user as UserData);
         }
+
+        const response = await fetch('/api/referrals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: WebApp.initDataUnsafe.user.id }),
+        });
+
+        const data = await response.json();
+        setReferrals(data.friends || []);
       } catch (error) {
         console.error('Error fetching referrals:', error);
       }
@@ -49,7 +36,6 @@ const FriendsTab = () => {
     fetchReferrals();
   }, []);
 
-  // Copy invite link to clipboard
   const handleInvite = () => {
     if (userData) {
       const inviteLink = `https://t.me/CashCraaze_bot/start?startapp=${userData.id}`;
@@ -59,8 +45,7 @@ const FriendsTab = () => {
   };
 
   return (
-    <div className={`friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500`}>
-      {/* Header Text */}
+    <div className="friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
       <div className="pt-8 space-y-1">
         <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
         <div className="text-xl">
@@ -72,15 +57,14 @@ const FriendsTab = () => {
           <span className="ml-2 font-semibold">GET 5%</span>
           <span className="ml-2 text-gray-500">OF</span>
         </div>
-        <div className="text-gray-500 text-xl">FRIEND`S COMMUNICATION</div>
+        <div className="text-gray-500 text-xl">FRIEND'S COMMUNICATION</div>
       </div>
 
-      {/* Empty State or Referrals */}
       {referrals.length === 0 ? (
         <div className="mt-8 mb-2">
           <div className="bg-[#151516] w-full rounded-2xl p-8 flex flex-col items-center">
             <Image
-              src={TonCoin}
+              src="/images/toncoin.svg"
               alt="Paws"
               width={171}
               height={132}
@@ -105,7 +89,6 @@ const FriendsTab = () => {
         </div>
       )}
 
-      {/* Fixed Invite Button */}
       <div className="fixed bottom-[70px] left-0 right-0 py-14 flex justify-center bg-gradient-to-t from-green-500 to-teal-500">
         <div className="w-full max-w-md px-4">
           <button
