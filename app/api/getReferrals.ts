@@ -1,30 +1,38 @@
+import { NextApiRequest, NextApiResponse } from 'next';
 import AWS from 'aws-sdk';
 
+// Initialize AWS SDK
 AWS.config.update({
   region: 'eu-north-1',
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,  // Use environment variables
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,  // Use environment variables
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID, // Use environment variables for security
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-export default async function handler(req, res) {
-  const { userId } = req.query;
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { userId } = req.query; // Extract userId from query parameters
+
+  if (!userId) {
+    res.status(400).json({ error: 'Missing userId parameter' });
+    return;
+  }
 
   try {
+    // Query DynamoDB
     const params = {
       TableName: 'PandaPals',
-      Key: { UserID: userId },
+      Key: { UserID: Number(userId) },
     };
 
     const result = await docClient.get(params).promise();
     if (result.Item && result.Item.friends) {
-      return res.status(200).json({ referrals: result.Item.friends });
+      res.status(200).json({ friends: result.Item.friends });
     } else {
-      return res.status(404).json({ message: 'No referrals found' });
+      res.status(404).json({ error: 'No friends found' });
     }
   } catch (error) {
     console.error('Error fetching referrals:', error);
-    return res.status(500).json({ message: 'Error fetching referrals' });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }
