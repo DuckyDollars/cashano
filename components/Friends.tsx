@@ -1,8 +1,9 @@
-'use client'
+'use client';
 
-import { TonCoin } from '@/images';
-import Image from 'next/image';
+import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { TonCoin } from '@/images';
 import WebApp from '@twa-dev/sdk';
 
 interface UserData {
@@ -20,12 +21,28 @@ const FriendsTab = () => {
           const user = WebApp.initDataUnsafe.user as UserData;
           setUserData(user);
 
-          // Fetch referrals using the API route
-          const response = await fetch(`/api/getReferrals?userId=${user.id}`);
-          const data = await response.json();
-          if (data.referrals) {
-            setReferrals(data.referrals);
-          }
+          // Initialize DynamoDB Client
+          const client = new DynamoDBClient({
+            region: "eu-north-1",
+            credentials: {
+              accessKeyId: "AKIAUJ3VUKANTQKUIAXV",
+              secretAccessKey: "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",
+            },
+          });
+
+          // Query the DynamoDB Table
+          const command = new QueryCommand({
+            TableName: "PandaPals",
+            KeyConditionExpression: "UserID = :userId",
+            ExpressionAttributeValues: {
+              ":userId": { S: `${user.id}` },
+            },
+          });
+
+          const data = await client.send(command);
+          const items = data.Items || [];
+          const referralList = items.map((item) => item.ReferralID?.S || "");
+          setReferrals(referralList);
         }
       } catch (error) {
         console.error('Error fetching referrals:', error);
@@ -35,7 +52,6 @@ const FriendsTab = () => {
     fetchReferrals();
   }, []);
 
-  // Copy invite link to clipboard
   const handleInvite = () => {
     if (userData) {
       const inviteLink = `https://t.me/CashCraaze_bot/start?startapp=${userData.id}`;
@@ -46,7 +62,6 @@ const FriendsTab = () => {
 
   return (
     <div className="friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
-      {/* Header Text */}
       <div className="pt-8 space-y-1">
         <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
         <div className="text-xl">
@@ -61,7 +76,6 @@ const FriendsTab = () => {
         <div className="text-gray-500 text-xl">FRIEND`S COMMUNICATION</div>
       </div>
 
-      {/* Empty State or Referrals */}
       {referrals.length === 0 ? (
         <div className="mt-8 mb-2">
           <div className="bg-[#151516] w-full rounded-2xl p-8 flex flex-col items-center">
@@ -91,7 +105,6 @@ const FriendsTab = () => {
         </div>
       )}
 
-      {/* Fixed Invite Button */}
       <div className="fixed bottom-[70px] left-0 right-0 py-14 flex justify-center bg-gradient-to-t from-green-500 to-teal-500">
         <div className="w-full max-w-md px-4">
           <button
