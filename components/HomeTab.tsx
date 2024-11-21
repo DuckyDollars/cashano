@@ -9,7 +9,7 @@ import ArrowRight from '@/icons/ArrowRight';
 
 const HomeTab = () => {
   return (
-    <div className="h-screen w-screen flex flex-col transition-all duration-300 bg-teal-500 pt-[54px]">
+    <div className="h-screen w-screen flex flex-col transition-all duration-300 bg-teal-500">
       
       <div className="w-full">
         <div className="flex w-full gap-4 bg-gradient-to-b from-green-500 to-teal-500 p-4">

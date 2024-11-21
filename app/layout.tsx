@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "TON SBT Minter",
+  title: "CashCraze",
   description: "Simple app for minting Soulbound Tokens on The Open Network",
 };
 
