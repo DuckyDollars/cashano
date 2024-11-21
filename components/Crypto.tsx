@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { crypto } from '@/images'
-import Image from 'next/image'
+import { crypto } from '@/images';
+import Image from 'next/image';
 import AWS from 'aws-sdk';
-import WebApp from '@twa-dev/sdk'
+import WebApp from '@twa-dev/sdk';
 
-// Set up DynamoDB client with necessary credentials
+// Initialize DynamoDB client with necessary credentials
 const dynamoDb = new AWS.DynamoDB.DocumentClient({
   region: 'eu-north-1',
   accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
@@ -17,13 +17,15 @@ interface UserData {
   id: number;
 }
 
-const CryptoTab = () => {
+const FriendsTab = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [amount, setAmount] = useState<number | string>('');
   const [tonBalance, setTonBalance] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isShaking, setIsShaking] = useState<boolean>(false);
+  const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState<boolean>(false);
 
   useEffect(() => {
     // Ensure the code runs only in the client-side environment
@@ -33,13 +35,13 @@ const CryptoTab = () => {
   }, []);
 
   useEffect(() => {
-    // Fetch the wallet address and TON balance from DynamoDB when user data is available
+    // Fetch wallet address and TON balance when user data is available
     if (userData) {
       const fetchData = async () => {
         const wallet = await getWalletAddress(userData.id);
         setWalletAddress(wallet);
 
-        // Fetch user's TonBalance from DynamoDB
+        // Fetch TON balance from DynamoDB
         const balance = await getTonBalance(userData.id);
         setTonBalance(balance);
       };
@@ -63,7 +65,7 @@ const CryptoTab = () => {
     }
   };
 
-  // Fetch TonBalance from DynamoDB
+  // Fetch TON balance from DynamoDB
   const getTonBalance = async (userId: number) => {
     const params = {
       TableName: 'PandaPals',
@@ -79,26 +81,43 @@ const CryptoTab = () => {
     }
   };
 
-  // Handle amount change
+  // Handle amount input change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(e.target.value);
+    const value = e.target.value;
+    setAmount(value);
+
+    // Enable button if amount is 250 or higher
+    if (Number(value) >= 250) {
+      setIsButtonEnabled(true);
+      setErrorMessage('');
+    } else {
+      setIsButtonEnabled(false);
+      setErrorMessage('Minimum Invest = 250');
+    }
   };
 
-  // Handle transaction submission
+  // Handle "Generate Transaction" click
   const handleGenerateTransaction = async () => {
-    if (typeof amount === 'string' || amount < 250) {
+    if (Number(amount) < 250) {
       setErrorMessage('Minimum Invest = 250');
       return;
     }
 
-    if (tonBalance < amount) {
+    // Check if the user has sufficient balance
+    if (tonBalance < Number(amount)) {
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
       setErrorMessage('Insufficient balance');
       return;
     }
 
-    // Proceed with the transaction logic, such as saving data in DynamoDB
+    // Show confirmation popup
+    setShowConfirmationPopup(true);
+  };
+
+  // Handle confirmation action
+  const handleConfirmTransaction = async () => {
+    // Proceed with the transaction logic (e.g., save data to DynamoDB)
     const transactionData = {
       TableName: 'PandaPals',
       Key: { UserID: userData!.id },
@@ -110,12 +129,17 @@ const CryptoTab = () => {
 
     try {
       await dynamoDb.update(transactionData).promise();
+      setShowConfirmationPopup(false);
       setErrorMessage('Transaction successful!');
-      // Optionally, you could reset the amount or perform other actions here
     } catch (error) {
       console.error('Error saving transaction:', error);
       setErrorMessage('Error occurred, please try again');
     }
+  };
+
+  // Handle cancel action on the confirmation popup
+  const handleCancelTransaction = () => {
+    setShowConfirmationPopup(false);
   };
 
   return (
@@ -129,7 +153,7 @@ const CryptoTab = () => {
             alt=""
             width={32}
             height={32}
-            className='rounded-full'
+            className="rounded-full"
           />
           <span className="text-white font-semibold">Crypto</span>
         </div>
@@ -159,7 +183,7 @@ const CryptoTab = () => {
       <div className="mt-3">
         <div className="w-full border-2 border-white rounded-lg mt-2 p-2 flex justify-between items-center">
           <p className="text-white text-sm">Min Deposit:</p>
-          <p className="text-white text-sm">250$</p>
+          <p className="text-white text-sm">0.01 TON</p>
         </div>
       </div>
 
@@ -173,17 +197,32 @@ const CryptoTab = () => {
         </div>
       </div>
 
-      {/* Button below the Note Section */}
+      {/* Button to Generate Transaction */}
       <div className="mt-4 flex justify-center">
         <button
-          className={`w-full max-w-xs border-2 border-transparent rounded-lg bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)] py-3 px-4 font-semibold text-lg ${isShaking ? 'animate-shake' : ''}`}
+          className={`w-full max-w-xs border-2 border-transparent rounded-lg ${isButtonEnabled ? 'bg-blue-500' : 'bg-[rgba(109,109,109,0.4)]'} text-white py-3 px-4 font-semibold text-lg ${isShaking ? 'animate-shake' : ''}`}
           onClick={handleGenerateTransaction}
+          disabled={!isButtonEnabled}
         >
           Generate Transaction
         </button>
       </div>
+
+      {/* Confirmation Popup */}
+      {showConfirmationPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs w-full">
+            <h3 className="text-xl font-semibold text-center mb-4">Confirm Transaction</h3>
+            <p className="text-center text-lg">Are you sure you want to invest {amount} TON?</p>
+            <div className="flex justify-between mt-4">
+              <button className="bg-red-500 text-white py-2 px-4 rounded-lg" onClick={handleCancelTransaction}>Cancel</button>
+              <button className="bg-green-500 text-white py-2 px-4 rounded-lg" onClick={handleConfirmTransaction}>Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
-export default CryptoTab;
+export default FriendsTab;
