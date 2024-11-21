@@ -3,7 +3,6 @@
 import { TonCoin } from '@/images';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
 
 interface UserData {
@@ -15,30 +14,17 @@ const FriendsTab = () => {
   const [referrals, setReferrals] = useState<string[]>([]);
 
   useEffect(() => {
-    // Initialize AWS SDK
-    AWS.config.update({
-      region: 'eu-north-1',
-      accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
-      secretAccessKey: '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',
-    });
-
-    const docClient = new AWS.DynamoDB.DocumentClient();
     const fetchReferrals = async () => {
       try {
-        // Get the user ID from WebApp SDK
         if (WebApp.initDataUnsafe.user) {
           const user = WebApp.initDataUnsafe.user as UserData;
           setUserData(user);
 
-          // Query DynamoDB
-          const params = {
-            TableName: 'PandaPals',
-            Key: { UserID: user.id },
-          };
-
-          const result = await docClient.get(params).promise();
-          if (result.Item && result.Item.friends) {
-            setReferrals(result.Item.friends); // Update referrals if friends exist
+          // Fetch referrals using the API route
+          const response = await fetch(`/api/getReferrals?userId=${user.id}`);
+          const data = await response.json();
+          if (data.referrals) {
+            setReferrals(data.referrals);
           }
         }
       } catch (error) {
@@ -59,7 +45,7 @@ const FriendsTab = () => {
   };
 
   return (
-    <div className={`friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500`}>
+    <div className="friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
       {/* Header Text */}
       <div className="pt-8 space-y-1">
         <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
