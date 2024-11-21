@@ -14,27 +14,15 @@ const FriendsTab = () => {
   const [referrals, setReferrals] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchReferrals = async () => {
-      try {
-        if (WebApp.initDataUnsafe?.user) {
-          const user = WebApp.initDataUnsafe.user as UserData;
-          setUserData(user);
+    // Remove server-side fetch and rely on WebApp user data
+    if (WebApp.initDataUnsafe?.user) {
+      const user = WebApp.initDataUnsafe.user as UserData;
+      setUserData(user);
 
-          const response = await fetch('/api/referrals', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id }),
-          });
-
-          const data = await response.json();
-          setReferrals(data.friends || []);
-        }
-      } catch (error) {
-        console.error('Error fetching referrals:', error);
-      }
-    };
-
-    fetchReferrals();
+      // Simulate getting referrals client-side, without a server
+      const fakeReferrals = ['User1', 'User2', 'User3']; // Example referrals
+      setReferrals(fakeReferrals);
+    }
   }, []);
 
   const handleInvite = () => {
