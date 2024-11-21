@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { crypto, stock, golden, diamond } from '@/images'
+import { crypto, stock, golden } from '@/images'
 
 type Task = {
     icon: string | React.FC<{ className?: string }> ;
@@ -33,12 +33,6 @@ const TasksTab = () => {
             title: 'Golden Investment',
             reward: '%150',
             link: '/golden',
-        },
-        {
-            icon: diamond.src,
-            title: 'Diamond Investment',
-            reward: '50%',
-            link: '/diamond',
         },
     ]
 
