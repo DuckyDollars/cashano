@@ -37,10 +37,10 @@ const FriendsTab = () => {
     // Fetch wallet address and TON balance when user data is available
     if (userData) {
       const fetchData = async () => {
-        const wallet = await getWalletAddress(userData.id);
+        const wallet = await getWalletAddress(userData.id); // Using userData.id
         setWalletAddress(wallet);
 
-        // Fetch TON balance from DynamoDB
+        // Fetch TON balance from DynamoDB using userData.id
         const balance = await getTonBalance(userData.id);
         setTonBalance(balance);
       };
@@ -48,11 +48,11 @@ const FriendsTab = () => {
     }
   }, [userData]);
 
-  // Fetch wallet address from DynamoDB
+  // Fetch wallet address from DynamoDB using userData.id
   const getWalletAddress = async (userId: number) => {
     const params = {
       TableName: 'PandaPals',
-      Key: { UserID: userId },
+      Key: { UserID: userId }, // Using userId
     };
 
     try {
@@ -64,11 +64,11 @@ const FriendsTab = () => {
     }
   };
 
-  // Fetch TON balance from DynamoDB
+  // Fetch TON balance from DynamoDB using userData.id
   const getTonBalance = async (userId: number) => {
     const params = {
       TableName: 'PandaPals',
-      Key: { UserID: userId },
+      Key: { UserID: userId }, // Using userId
     };
 
     try {
@@ -117,7 +117,7 @@ const FriendsTab = () => {
     // Proceed with the transaction logic (e.g., save data to DynamoDB)
     const transactionData = {
       TableName: 'PandaPals',
-      Key: { UserID: userData!.id },
+      Key: { UserID: userData!.id }, // Using userData.id
       UpdateExpression: 'SET monthlyInvest = list_append(monthlyInvest, :newInvest)',
       ExpressionAttributeValues: {
         ':newInvest': [{ date: new Date().toISOString(), amount }],
