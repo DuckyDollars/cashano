@@ -12,12 +12,12 @@ interface UserData {
 
 const FriendsTab = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [referrals, setReferrals] = useState<string[]>([]);
+  const [friends, setFriends] = useState<string[]>([]);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
-      const fetchReferrals = async () => {
-        try {
+    const fetchFriends = async () => {
+      try {
+        if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
           const user = WebApp.initDataUnsafe.user as UserData;
           setUserData(user);
 
@@ -41,19 +41,24 @@ const FriendsTab = () => {
 
           const data = await client.send(command);
           const items = data.Items || [];
-          const referralList = items.map((item) => item.ReferralID?.S || "");
-          setReferrals(referralList);
-        } catch (error) {
-          console.error('Error fetching referrals:', error);
-        }
-      };
 
-      fetchReferrals();
-    }
+          const friendsList = items.length > 0 && items[0].friends && Array.isArray(items[0].friends.L)
+          ? items[0].friends.L.map((friend) => (friend && friend.S ? friend.S : ""))
+          : [];
+        
+            setFriends(friendsList);
+
+        }
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+      }
+    };
+
+    fetchFriends();
   }, []);
 
   const handleInvite = () => {
-    if (typeof window !== "undefined" && userData) {
+    if (userData) {
       const inviteLink = `https://t.me/CashCraaze_bot/start?startapp=${userData.id}`;
       navigator.clipboard.writeText(inviteLink);
       alert('Invite link copied!');
@@ -76,7 +81,7 @@ const FriendsTab = () => {
         <div className="text-gray-500 text-xl">FRIEND`S COMMUNICATION</div>
       </div>
 
-      {referrals.length === 0 ? (
+      {friends.length === 0 ? (
         <div className="mt-8 mb-2">
           <div className="bg-[#151516] w-full rounded-2xl p-8 flex flex-col items-center">
             <Image
@@ -94,14 +99,17 @@ const FriendsTab = () => {
         </div>
       ) : (
         <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Your Referrals</h2>
-          <ul>
-            {referrals.map((referral, index) => (
-              <li key={index} className="bg-gray-100 p-2 mb-2 rounded">
-                User {referral}
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-2xl font-bold mb-4">Your Friends</h2>
+          {friends.map((friendId, index) => (
+            <div key={index} className="mb-8">
+              <h3 className="text-xl font-semibold">Friend {index + 1}</h3>
+              <ul>
+                <li className="bg-gray-100 p-2 mb-2 rounded">
+                  User ID: {friendId}
+                </li>
+              </ul>
+            </div>
+          ))}
         </div>
       )}
 
