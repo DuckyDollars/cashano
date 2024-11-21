@@ -1,12 +1,13 @@
-"use client";
+'use client'
 
-import Image from 'next/image'; // Fix: Ensure correct import for Image
-import { useEffect, useState } from 'react';
 import { TonCoin } from '@/images';
-import WebApp from '@twa-dev/sdk'; // Fix: Ensure '@twa-dev/sdk' is properly installed and imported
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import AWS from 'aws-sdk';
+import WebApp from '@twa-dev/sdk';
 
 interface UserData {
-  id: number; // Fix: Correct the type declaration
+  id: number;
 }
 
 const FriendsTab = () => {
@@ -14,17 +15,41 @@ const FriendsTab = () => {
   const [referrals, setReferrals] = useState<string[]>([]);
 
   useEffect(() => {
-    // Ensure this runs only on the client side
-    if (typeof window !== "undefined" && WebApp.initDataUnsafe?.user) {
-      const user = WebApp.initDataUnsafe.user as UserData;
-      setUserData(user);
+    // Initialize AWS SDK
+    AWS.config.update({
+      region: 'eu-north-1',
+      accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
+      secretAccessKey: 'X8fTA+HvyfDLk0m3+u32gtcOyWe+yiJJZ0GegssZ',
+    });
 
-      // Simulate getting referrals client-side, without a server
-      const fakeReferrals = ['User1', 'User2', 'User3']; // Example referrals
-      setReferrals(fakeReferrals);
-    }
+    const docClient = new AWS.DynamoDB.DocumentClient();
+    const fetchReferrals = async () => {
+      try {
+        // Get the user ID from WebApp SDK
+        if (WebApp.initDataUnsafe.user) {
+          const user = WebApp.initDataUnsafe.user as UserData;
+          setUserData(user);
+
+          // Query DynamoDB
+          const params = {
+            TableName: 'PandaPals',
+            Key: { UserID: user.id },
+          };
+
+          const result = await docClient.get(params).promise();
+          if (result.Item && result.Item.friends) {
+            setReferrals(result.Item.friends); // Update referrals if friends exist
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching referrals:', error);
+      }
+    };
+
+    fetchReferrals();
   }, []);
 
+  // Copy invite link to clipboard
   const handleInvite = () => {
     if (userData) {
       const inviteLink = `https://t.me/CashCraaze_bot/start?startapp=${userData.id}`;
@@ -34,7 +59,7 @@ const FriendsTab = () => {
   };
 
   return (
-    <div className="friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
+    <div className={`friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500`}>
       {/* Header Text */}
       <div className="pt-8 space-y-1">
         <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
@@ -47,7 +72,7 @@ const FriendsTab = () => {
           <span className="ml-2 font-semibold">GET 5%</span>
           <span className="ml-2 text-gray-500">OF</span>
         </div>
-        <div className="text-gray-500 text-xl">FRIENDS COMMUNICATION</div>
+        <div className="text-gray-500 text-xl">FRIEND`S COMMUNICATION</div>
       </div>
 
       {/* Empty State or Referrals */}
