@@ -15,9 +15,9 @@ const FriendsTab = () => {
   const [referrals, setReferrals] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchReferrals = async () => {
-      try {
-        if (WebApp.initDataUnsafe.user) {
+    if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
+      const fetchReferrals = async () => {
+        try {
           const user = WebApp.initDataUnsafe.user as UserData;
           setUserData(user);
 
@@ -43,17 +43,17 @@ const FriendsTab = () => {
           const items = data.Items || [];
           const referralList = items.map((item) => item.ReferralID?.S || "");
           setReferrals(referralList);
+        } catch (error) {
+          console.error('Error fetching referrals:', error);
         }
-      } catch (error) {
-        console.error('Error fetching referrals:', error);
-      }
-    };
+      };
 
-    fetchReferrals();
+      fetchReferrals();
+    }
   }, []);
 
   const handleInvite = () => {
-    if (userData) {
+    if (typeof window !== "undefined" && userData) {
       const inviteLink = `https://t.me/CashCraaze_bot/start?startapp=${userData.id}`;
       navigator.clipboard.writeText(inviteLink);
       alert('Invite link copied!');
