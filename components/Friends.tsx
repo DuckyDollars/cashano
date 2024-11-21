@@ -104,7 +104,7 @@ const FriendsTab = () => {
             <div key={index} className="mb-8">
               <h3 className="text-xl font-semibold">Friend {index + 1}</h3>
               <ul>
-                <li className="bg-gray-100 p-2 mb-2 rounded">
+                <li className="rounded-[10px] border-[2px] border-solid border-white p-2 mb-2">
                   User ID: {friendId}
                 </li>
               </ul>

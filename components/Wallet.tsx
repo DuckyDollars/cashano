@@ -23,26 +23,29 @@ const Invest = () => {
     }, []);
 
     useEffect(() => {
-        const checkWalletConnection = async () => {
-            if (tonConnectUI.account?.address) {
-                handleWalletConnection(tonConnectUI.account?.address);
-            } else {
-                handleWalletDisconnection();
-            }
-        };
+        // Check if window is defined (client-side only)
+        if (typeof window !== "undefined") {
+            const checkWalletConnection = async () => {
+                if (tonConnectUI.account?.address) {
+                    handleWalletConnection(tonConnectUI.account?.address);
+                } else {
+                    handleWalletDisconnection();
+                }
+            };
 
-        checkWalletConnection();
-        const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
-            if (wallet) {
-                handleWalletConnection(wallet.account.address);
-            } else {
-                handleWalletDisconnection();
-            }
-        });
+            checkWalletConnection();
+            const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
+                if (wallet) {
+                    handleWalletConnection(wallet.account.address);
+                } else {
+                    handleWalletDisconnection();
+                }
+            });
 
-        return () => {
-            unsubscribe();
-        };
+            return () => {
+                unsubscribe();
+            };
+        }
     }, [tonConnectUI, handleWalletConnection, handleWalletDisconnection]);
 
     const handleWalletAction = async () => {
