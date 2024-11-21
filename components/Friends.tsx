@@ -1,7 +1,8 @@
-'use client';
+"use client"
 
 import Image from 'next/image'; // Fix: Ensure correct import for Image
 import { useEffect, useState } from 'react';
+import { TonCoin } from '@/images';
 import WebApp from '@twa-dev/sdk'; // Fix: Ensure '@twa-dev/sdk' is properly installed and imported
 
 interface UserData {
@@ -66,7 +67,7 @@ const FriendsTab = () => {
         <div className="mt-8 mb-2">
           <div className="bg-[#151516] w-full rounded-2xl p-8 flex flex-col items-center">
             <Image
-              src="/images/toncoin.svg" // Fix: Update image path correctly
+              src={TonCoin}
               alt="Paws"
               width={171}
               height={132}
