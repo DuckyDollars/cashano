@@ -1,3 +1,5 @@
+'use client' 
+
 import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
