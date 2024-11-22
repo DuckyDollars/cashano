@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
@@ -27,7 +25,6 @@ type Task = {
 };
 
 const TasksTab = () => {
-  // Update state to expect an array of Task objects
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null); // Track active task
@@ -41,7 +38,6 @@ const TasksTab = () => {
     try {
       const params = { TableName: TASKS_TABLE_NAME };
       const data = await dynamoDB.scan(params).promise();
-      // Ensure that the data.Items is cast to the correct type
       setTasks((data.Items || []) as Task[]);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -62,7 +58,6 @@ const TasksTab = () => {
     }
     fetchTasks(); // Fetch tasks on mount
   }, []);
-  
 
   // Filter tasks based on the active tab
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
@@ -75,25 +70,22 @@ const TasksTab = () => {
 
   const handleTaskClick = (index: number) => {
     setActiveTaskIndex(index); // Set the active task when a task is clicked
+    setButtonText("Generate Transaction"); // Reset the button text after task is selected
   };
-  
 
   const handleTransaction = async () => {
     if (activeTaskIndex === null || userData.id === null) {
       setButtonText('Please select a task');
       return;
     }
-  
+
     const task = tasks[activeTaskIndex];  // Get the selected task using the activeTaskIndex
     const price = task.price; // Price of the active task
 
     try {
-      // Fetch the user's current tonBalance from the 'invest' table
       const userParams = {
         TableName: INVEST_TABLE_NAME,
-        Key: {
-          UserID: userData.id, // Using UserID as partition key
-        },
+        Key: { UserID: userData.id },
       };
 
       const userDataResponse = await dynamoDB.get(userParams).promise();
@@ -102,17 +94,11 @@ const TasksTab = () => {
       if (userInvestData) {
         const tonBalance = userInvestData.tonBalance || 0;
 
-        // Check if the user has enough balance
         if (tonBalance >= price) {
-          // Deduct the price from the tonBalance
           const newTonBalance = tonBalance - price;
-
-          // Update the tonBalance in DynamoDB
           const updateParams = {
             TableName: INVEST_TABLE_NAME,
-            Key: {
-              UserID: userData.id, // Using UserID as partition key
-            },
+            Key: { UserID: userData.id },
             UpdateExpression: 'set tonBalance = :newTonBalance, #transactionDate = :transactionDate, #transactionTitle = :transactionTitle',
             ExpressionAttributeNames: {
               '#transactionDate': 'transactionDate',
@@ -126,7 +112,6 @@ const TasksTab = () => {
           };
 
           await dynamoDB.update(updateParams).promise();
-
           setButtonText('Transaction Successful');
         } else {
           setButtonText('Insufficient Balance');
@@ -217,10 +202,8 @@ const TasksTab = () => {
       <div className="mt-3 flex justify-center">
         <button
           onClick={handleTransaction}
-          className={`w-full max-w-xs border-2 border-transparent rounded-lg py-3 px-4 font-semibold text-lg ${
-            activeTaskIndex !== null
-              ? 'bg-blue-500 text-white'
-              : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
+          className={`w-full max-w-xs border-2 border-transparent rounded-lg py-3 px-4 font-semibold text-white transition-colors duration-200 ${
+            activeTaskIndex === null ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'
           }`}
         >
           {buttonText}
