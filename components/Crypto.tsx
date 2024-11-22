@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
-import { WebApp } from '@twa-dev/sdk';
+import WebApp from '@twa-dev/sdk';
+
 
 // AWS Configuration
 AWS.config.update({
