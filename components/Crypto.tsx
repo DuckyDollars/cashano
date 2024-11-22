@@ -97,7 +97,7 @@ const FriendsTab = () => {
     try {
       if (!userData?.id) {
         console.error('User ID is not defined.');
-        setLoading(false); 
+        setLoading(false);
         return;
       }
   
@@ -110,13 +110,12 @@ const FriendsTab = () => {
         return;
       }
   
-      // Deduct the amount from tonBalance and add to monthlyInvest in DynamoDB
       const updateParams = {
         TableName: 'invest',
         Key: {
           UserID: { S: userData.id.toString() },
         },
-        UpdateExpression: 'SET tonBalance = tonBalance - :amount, monthlyInvest = list_append(monthlyInvest, :newInvest)',
+        UpdateExpression: 'SET tonBalance = tonBalance - :amount, monthlyInvest = if_not_exists(monthlyInvest, :emptyList), monthlyInvest = list_append(monthlyInvest, :newInvest)',
         ExpressionAttributeValues: {
           ':amount': { N: numericAmount.toString() },
           ':newInvest': {
@@ -129,12 +128,14 @@ const FriendsTab = () => {
               },
             ],
           },
+          ':emptyList': { L: [] }, // Default value to set if monthlyInvest does not exist
         },
       };
   
-      await dynamoDBClient.send(new UpdateItemCommand(updateParams));
-      setTonBalance((prevBalance) => (prevBalance || 0) - numericAmount); // Update local balance
+      const result = await dynamoDBClient.send(new UpdateItemCommand(updateParams));
+      console.log('DynamoDB update result:', result);
   
+      setTonBalance((prevBalance) => (prevBalance || 0) - numericAmount); // Update local balance
     } catch (error) {
       console.error('Error processing transaction:', error);
       setError('Error processing transaction. Please try again later.');
@@ -142,6 +143,7 @@ const FriendsTab = () => {
       setLoading(false); 
     }
   };
+  
   
 
   // Ensure numericAmount is calculated correctly
