@@ -80,7 +80,10 @@ const TasksTab = () => {
 
   // Handle Transaction generation
   const handleTransaction = async () => {
-    if (activeTaskIndex === null || userData.id === null) return;
+    if (activeTaskIndex === null || userData.id === null) {
+      setButtonText('Please select a task');
+      return;
+    }
 
     setButtonText('Loading...'); // Change button text to Loading...
     const task = tasks[activeTaskIndex];
