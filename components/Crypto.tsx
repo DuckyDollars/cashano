@@ -33,34 +33,34 @@ const FriendsTab = () => {
     }, []);
 
     const fetchWalletAddress = async (userId: number) => {
-      try {
-          const command = new QueryCommand({
-              TableName: 'PandaPals',
-              KeyConditionExpression: 'UserID = :id',
-              ExpressionAttributeValues: {
-                  ':id': { N: `${userId}` },
-              },
-          });
-          const response = await client.send(command);
-  
-          console.log('DynamoDB Response:', response);
-  
-          // Check if Items exist and WalletAddress is present
-          if (response.Items && response.Items.length > 0) {
-              const walletAddress = response.Items[0]?.WalletAddress?.S;
-              if (walletAddress) {
-                  setWalletAddress(walletAddress);
-              } else {
-                  console.error('WalletAddress not found in response');
-              }
-          } else {
-              console.error('No items found for the given UserID');
-          }
-      } catch (error) {
-          console.error('Error fetching wallet address:', error);
-      }
-  };
-  
+        try {
+            const command = new QueryCommand({
+                TableName: 'PandaPals',
+                KeyConditionExpression: 'UserID = :id',
+                ExpressionAttributeValues: {
+                    ':id': { N: `${userId}` },
+                },
+            });
+            const response = await client.send(command);
+
+            console.log('DynamoDB Response:', response);
+
+            // Check if Items exist and WalletAddress is present
+            if (response.Items && response.Items.length > 0) {
+                const wallet = response.Items[0]?.WalletAddress?.S;
+                if (wallet) {
+                    const formattedWallet = `${wallet.slice(0, 12)}...${wallet.slice(-12)}`;
+                    setWalletAddress(formattedWallet);
+                } else {
+                    console.error('WalletAddress not found in response');
+                }
+            } else {
+                console.error('No items found for the given UserID');
+            }
+        } catch (error) {
+            console.error('Error fetching wallet address:', error);
+        }
+    };
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -114,7 +114,6 @@ const FriendsTab = () => {
                     alert('Transaction Successful!');
                 } else {
                     setError('Insufficient balance!');
-                    // Add vibration and button shake
                     navigator.vibrate(200);
                 }
             }
