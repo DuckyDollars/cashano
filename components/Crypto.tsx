@@ -17,7 +17,9 @@ const dynamoDBClient = new DynamoDBClient({
 
 const FriendsTab = () => {
   const [userData, setUserData] = useState<{ id: number } | null>(null);
-  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Ensure the code runs only in the client-side environment
@@ -31,6 +33,10 @@ const FriendsTab = () => {
   useEffect(() => {
     if (userData?.id) {
       const fetchWalletAddress = async () => {
+        setLoading(true);
+        setError(null);
+        setWalletAddress(null); // Reset wallet address before fetching
+
         try {
           const params = {
             TableName: 'PandaPals',
@@ -42,15 +48,17 @@ const FriendsTab = () => {
 
           const { Items } = await dynamoDBClient.send(new QueryCommand(params));
 
-          if (Items && Items.length > 0) {
+          if (Items && Items.length > 0 && Items[0].WalletAddress) {
             const wallet = Items[0].WalletAddress.S;
             setWalletAddress(wallet || 'nfwuj848...jdwndj8477');
           } else {
-            setWalletAddress('nfwuj848...jdwndj8477');
+            setWalletAddress('Connect wallet first');
           }
         } catch (error) {
           console.error('Error fetching wallet address:', error);
-          setWalletAddress('nfwuj848...jdwndj8477');
+          setError('Error accessing DynamoDB. Please try again later.');
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -75,9 +83,16 @@ const FriendsTab = () => {
       <div className="mt-3">
         <p className="text-white font-semibold">Your wallet</p>
         <div className="w-full border-2 border-white rounded-lg mt-2 p-2">
-          <p className="text-white text-sm">{walletAddress}</p>
+          {loading ? (
+            <p className="text-white text-sm">Loading...</p>
+          ) : error ? (
+            <p className="text-red-500 text-sm">{error}</p>
+          ) : (
+            <p className="text-white text-sm">{walletAddress}</p>
+          )}
         </div>
       </div>
+
       <div className="mt-3">
         <p className="text-white font-semibold">Amount</p>
         <div className="w-full border-2 border-white rounded-lg mt-2 p-2">
@@ -100,6 +115,7 @@ const FriendsTab = () => {
           <p className="mt-2">You are only allowed to send through the connected wallet. If you send from other wallets or make deposit through exchanges, the funds will not be added to your account.</p>
         </div>
       </div>
+
       {/* Button below the Note Section */}
       <div className="mt-4 flex justify-center">
         <button className="w-full max-w-xs border-2 border-transparent rounded-lg bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)] py-3 px-4 font-semibold text-lg">
