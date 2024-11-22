@@ -77,62 +77,72 @@ const FriendsTab = () => {
   };
 
   const handleTransaction = async () => {
-    if (typeof amount === 'number' && tonBalance !== null) {
-      if (amount < 10000) {
-        // Trigger shake and vibration for amounts less than 10000
-        setButtonShake(true);
-        setTimeout(() => setButtonShake(false), 500); // Reset shake after 500ms
-        if (navigator.vibrate) navigator.vibrate(200); // Vibrate if supported
+    const numericAmount = parseFloat(amount.toString()); // Ensure amount is a number
+
+    if (isNaN(numericAmount)) {
+      console.log('Invalid amount');
+      return; // Do nothing if the amount is invalid
+    }
+
+    if (numericAmount < 10000) {
+      // Trigger shake and vibration for amounts less than 10000
+      setButtonShake(true);
+      setTimeout(() => setButtonShake(false), 500); // Reset shake after 500ms
+      if (navigator.vibrate) navigator.vibrate(200); // Vibrate if supported
+      return;
+    }
+
+    setLoading(true); // Set loading state to true when starting the transaction
+
+    try {
+      if (!userData?.id) {
+        console.error('User ID is not defined.');
+        setLoading(false); 
         return;
       }
 
-      setLoading(true); // Set loading state to true when starting the transaction
-      try {
-        if (!userData?.id) {
-          console.error('User ID is not defined.');
-          setLoading(false); 
-          return;
-        }
-
-        if (amount > tonBalance) {
-          // If the amount is greater than balance, trigger shake and vibration
-          setButtonShake(true);
-          setTimeout(() => setButtonShake(false), 500);
-          if (navigator.vibrate) navigator.vibrate(200);
-          setLoading(false);
-          return;
-        }
-
-        const updateParams = {
-          TableName: 'invest',
-          Key: {
-            UserID: { S: userData.id.toString() },
-          },
-          UpdateExpression: 'SET tonBalance = tonBalance - :amount, monthlyInvest = list_append(monthlyInvest, :newInvest)',
-          ExpressionAttributeValues: {
-            ':amount': { N: amount.toString() },
-            ':newInvest': {
-              L: [
-                {
-                  M: {
-                    date: { S: new Date().toISOString() },
-                    amount: { N: amount.toString() },
-                  },
-                },
-              ],
-            },
-          },
-        };
-
-        await dynamoDBClient.send(new UpdateItemCommand(updateParams));
-        setTonBalance((prevBalance) => (prevBalance || 0) - amount); // Update local balance
-      } catch (error) {
-        console.error('Error processing transaction:', error);
-      } finally {
-        setLoading(false); 
+      if (tonBalance !== null && numericAmount > tonBalance) {
+        // If the amount is greater than balance, trigger shake and vibration
+        setButtonShake(true);
+        setTimeout(() => setButtonShake(false), 500);
+        if (navigator.vibrate) navigator.vibrate(200);
+        setLoading(false);
+        return;
       }
+      
+
+      const updateParams = {
+        TableName: 'invest',
+        Key: {
+          UserID: { S: userData.id.toString() },
+        },
+        UpdateExpression: 'SET tonBalance = tonBalance - :amount, monthlyInvest = list_append(monthlyInvest, :newInvest)',
+        ExpressionAttributeValues: {
+          ':amount': { N: numericAmount.toString() },
+          ':newInvest': {
+            L: [
+              {
+                M: {
+                  date: { S: new Date().toISOString() },
+                  amount: { N: numericAmount.toString() },
+                },
+              },
+            ],
+          },
+        },
+      };
+
+      await dynamoDBClient.send(new UpdateItemCommand(updateParams));
+      setTonBalance((prevBalance) => (prevBalance || 0) - numericAmount); // Update local balance
+    } catch (error) {
+      console.error('Error processing transaction:', error);
+    } finally {
+      setLoading(false); 
     }
   };
+
+  // Ensure numericAmount is calculated correctly
+  const numericAmount = parseFloat(amount.toString());
 
   return (
     <div className="friends-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
@@ -181,9 +191,9 @@ const FriendsTab = () => {
         <button
           onClick={handleTransaction}
           className={`w-full max-w-xs border-2 border-transparent rounded-lg ${
-            parseFloat(amount.toString()) >= 10000 ? 'bg-blue-500 text-black' : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
+            numericAmount >= 10000 ? 'bg-blue-500 text-black' : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
           } py-3 px-4 font-semibold text-lg ${buttonShake ? 'animate-shake' : ''}`}
-          disabled={parseFloat(amount.toString()) < 10000 || loading}
+          disabled={isNaN(numericAmount) || numericAmount < 10000 || loading}
         >
           {loading ? 'Loading...' : 'Generate Transaction'}
         </button>
