@@ -103,7 +103,7 @@ const FriendsTab = () => {
             <div key={index} className="mb-8">
               <h3 className="text-xl font-semibold">Friend {index + 1}</h3>
               <ul>
-                <li className="bg-gray-100 p-2 mb-2 rounded">
+                <li className="w-full max-w-xs border-2 border-transparent rounded-lg bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)] py-3 px-4 font-semibold text-lg">
                   User ID: {friendId}
                 </li>
               </ul>
