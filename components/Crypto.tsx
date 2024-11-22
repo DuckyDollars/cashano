@@ -73,21 +73,19 @@ const TasksTab = () => {
     setActiveTaskIndex(null); // Reset active task when switching tabs
   };
 
-  // Handle task click
   const handleTaskClick = (index: number) => {
-    setActiveTaskIndex(index); // Set the active task on click
+    setActiveTaskIndex(index); // Set the active task when a task is clicked
   };
+  
 
-  // Handle Transaction generation
   const handleTransaction = async () => {
     if (activeTaskIndex === null || userData.id === null) {
       setButtonText('Please select a task');
       return;
     }
-
-    setButtonText('Loading...'); // Change button text to Loading...
-    const task = tasks[activeTaskIndex];
-    const price = task.price; // Price of the active task (in TonCoin)
+  
+    const task = tasks[activeTaskIndex];  // Get the selected task using the activeTaskIndex
+    const price = task.price; // Price of the active task
 
     try {
       // Fetch the user's current tonBalance from the 'invest' table
