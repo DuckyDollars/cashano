@@ -1,145 +1,54 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import AWS from 'aws-sdk';
-import WebApp from '@twa-dev/sdk';
+import React, { useState } from 'react';
 
-// AWS Configuration
-AWS.config.update({
-  region: 'eu-north-1',
-  credentials: new AWS.Credentials({
-    accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
-    secretAccessKey: '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',
-  }),
-});
-
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const TASKS_TABLE_NAME = 'Tasks'; // DynamoDB table name for tasks
-const INVEST_TABLE_NAME = 'invest'; // DynamoDB table name for user investments
-
-// Define Task type
 type Task = {
   title: string;
   price: number;
   reward: string;
   icon?: string;
-  type: 'weekly' | 'monthly' | 'yearly'; // Adjust this type based on your actual data
+  type: 'weekly' | 'monthly' | 'yearly'; // Adjust this type based on your requirements
 };
 
 const TasksTab = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks] = useState<Task[]>([
+    { title: 'Weekly Challenge 1', price: 100, reward: '+10%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'Weekly Challenge 2', price: 200, reward: '+20%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'Monthly Challenge', price: 300, reward: '+30%', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'Yearly Challenge', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+  ]);
+
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null); // Track active task
-  const [buttonText, setButtonText] = useState("Generate Transaction"); // For button text
-
-  // User data state
-  const [userData, setUserData] = useState<{ id: string | null }>({ id: null });
-
-  // Fetch tasks from DynamoDB
-  const fetchTasks = async () => {
-    try {
-      const params = { TableName: TASKS_TABLE_NAME };
-      const data = await dynamoDB.scan(params).promise();
-      setTasks((data.Items || []) as Task[]);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && typeof WebApp !== 'undefined' && WebApp.initDataUnsafe?.user) {
-      const user = WebApp.initDataUnsafe.user;
-      
-      if (user && typeof user.id === 'string') {
-        setUserData({ id: user.id });
-      } else {
-        console.error('User data is missing the id or is not a string.');
-      }
-    } else {
-      console.error('WebApp.initDataUnsafe or user is not available.');
-    }
-    fetchTasks(); // Fetch tasks on mount
-  }, []);
+  const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
+  const [buttonText, setButtonText] = useState('Generate Transaction');
 
   // Filter tasks based on the active tab
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
 
-  // Handle tab switch
   const handleTabSwitch = (tab: 'weekly' | 'monthly' | 'yearly') => {
     setActiveTab(tab);
     setActiveTaskIndex(null); // Reset active task when switching tabs
-    localStorage.removeItem('selectedTask'); // Clear local storage when switching tabs
   };
 
   const handleTaskClick = (index: number) => {
-    setActiveTaskIndex(index); // Set the active task when a task is clicked
-    setButtonText("Generate Transaction"); // Reset the button text after task is selected
-
-    const task = tasks[index]; // Get the selected task
-    // Save task price and title in localStorage
-    localStorage.setItem('selectedTask', JSON.stringify({
-      price: task.price,
-      title: task.title
-    }));
+    setActiveTaskIndex(index); // Set the active task when clicked
+    setButtonText('Generate Transaction'); // Reset button text
   };
 
-  const handleTransaction = async () => {
-    if (activeTaskIndex === null || userData.id === null) {
+  const handleTransaction = () => {
+    if (activeTaskIndex === null) {
       setButtonText('Please select a task');
       return;
     }
 
-    // Retrieve the selected task details from localStorage
-    const selectedTask = JSON.parse(localStorage.getItem('selectedTask') || '{}');
-    const { price, title } = selectedTask;
-
-    if (!price || !title) {
-      setButtonText('Please select a valid task');
+    const task = filteredTasks[activeTaskIndex];
+    if (!task) {
+      setButtonText('Invalid Task');
       return;
     }
 
-    try {
-      const userParams = {
-        TableName: INVEST_TABLE_NAME,
-        Key: { UserID: userData.id },
-      };
-
-      const userDataResponse = await dynamoDB.get(userParams).promise();
-      const userInvestData = userDataResponse.Item;
-
-      if (userInvestData) {
-        const tonBalance = userInvestData.tonBalance || 0;
-
-        if (tonBalance >= price) {
-          const newTonBalance = tonBalance - price;
-          const updateParams = {
-            TableName: INVEST_TABLE_NAME,
-            Key: { UserID: userData.id },
-            UpdateExpression: 'set tonBalance = :newTonBalance, #transactionDate = :transactionDate, #transactionTitle = :transactionTitle',
-            ExpressionAttributeNames: {
-              '#transactionDate': 'transactionDate',
-              '#transactionTitle': 'transactionTitle',
-            },
-            ExpressionAttributeValues: {
-              ':newTonBalance': newTonBalance,
-              ':transactionDate': new Date().toISOString(),
-              ':transactionTitle': `Transaction for Task: ${title}`,
-            },
-          };
-
-          await dynamoDB.update(updateParams).promise();
-          setButtonText('Transaction Successful');
-          localStorage.removeItem('selectedTask'); // Clear task selection after successful transaction
-        } else {
-          setButtonText('Insufficient Balance');
-        }
-      } else {
-        setButtonText('User Not Found');
-      }
-    } catch (error) {
-      console.error('Error processing transaction:', error);
-      setButtonText('Transaction Failed');
-    }
+    // Simulate a successful transaction
+    setButtonText(`Transaction Successful for ${task.title}`);
   };
 
   return (
@@ -182,8 +91,6 @@ const TasksTab = () => {
                   <img
                     src={task.icon}
                     alt={task.title}
-                    width={40}
-                    height={40}
                     className="w-full h-full object-contain rounded-full"
                   />
                 ) : (
@@ -200,7 +107,6 @@ const TasksTab = () => {
                 <div className="text-[17px]">{task.title}</div>
                 <div className="text-gray-400 text-[14px]">{task.price} TonCoin</div>
               </div>
-              {/* Circle to show reward */}
               <div
                 className={`w-10 h-10 border-2 ${
                   activeTaskIndex === index ? 'bg-green-500' : 'border-green-500'
@@ -216,12 +122,10 @@ const TasksTab = () => {
       </div>
 
       {/* Button Section */}
-      <div className="mt-3 flex justify-center">
+      <div className="fixed bottom-4 left-4 right-4">
         <button
           onClick={handleTransaction}
-          className={`w-full max-w-xs border-2 border-transparent rounded-lg py-3 px-4 font-semibold text-white transition-colors duration-200 ${
-            activeTaskIndex === null ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'
-          }`}
+          className="w-full py-2 px-4 rounded-lg text-white bg-green-500"
         >
           {buttonText}
         </button>
