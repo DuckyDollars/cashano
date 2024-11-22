@@ -51,14 +51,14 @@ const TasksTab = () => {
                 <button
                     onClick={() => setActiveTab('in-game')}
                     className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 
-                        ${activeTab === 'in-game' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'}`}
+                        ${activeTab === 'in-game' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'}`}
                 >
                     AI Software
                 </button>
                 <button
                     onClick={() => setActiveTab('partners')}
                     className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition duration-300 
-                        ${activeTab === 'partners' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'}`}
+                        ${activeTab === 'partners' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'}`}
                 >
                     Game
                     <div className="bg-[#5a5a5a] text-[#fefefe] size-4 rounded-full flex items-center justify-center text-[11px]">

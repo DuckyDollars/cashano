@@ -20,7 +20,6 @@ const TasksTab = () => {
 
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
-  const [buttonText, setButtonText] = useState('Generate Transaction');
 
   // Filter tasks based on the active tab
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
@@ -32,24 +31,9 @@ const TasksTab = () => {
 
   const handleTaskClick = (index: number) => {
     setActiveTaskIndex(index); // Set the active task when clicked
-    setButtonText('Generate Transaction'); // Reset button text
   };
 
-  const handleTransaction = () => {
-    if (activeTaskIndex === null) {
-      setButtonText('Please select a task');
-      return;
-    }
 
-    const task = filteredTasks[activeTaskIndex];
-    if (!task) {
-      setButtonText('Invalid Task');
-      return;
-    }
-
-    // Simulate a successful transaction
-    setButtonText(`Transaction Successful for ${task.title}`);
-  };
 
   return (
     <div className="quest-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
@@ -58,7 +42,7 @@ const TasksTab = () => {
         <button
           onClick={() => handleTabSwitch('weekly')}
           className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
-            activeTab === 'weekly' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'
+            activeTab === 'weekly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
           }`}
         >
           Weekly
@@ -66,7 +50,7 @@ const TasksTab = () => {
         <button
           onClick={() => handleTabSwitch('monthly')}
           className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
-            activeTab === 'monthly' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'
+            activeTab === 'monthly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
           }`}
         >
           Monthly
@@ -74,7 +58,7 @@ const TasksTab = () => {
         <button
           onClick={() => handleTabSwitch('yearly')}
           className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
-            activeTab === 'yearly' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'
+            activeTab === 'yearly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
           }`}
         >
           Yearly
@@ -119,16 +103,6 @@ const TasksTab = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Button Section */}
-      <div className="fixed bottom-4 left-4 right-4">
-        <button
-          onClick={handleTransaction}
-          className="w-full py-2 px-4 rounded-lg text-white bg-green-500"
-        >
-          {buttonText}
-        </button>
       </div>
     </div>
   );
