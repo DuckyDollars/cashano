@@ -92,19 +92,22 @@ const FriendsTab = () => {
   
       // Proceed with the transaction if the amount is valid
       try {
+        setLoading(true); // Set loading state to true when starting the transaction
+  
         if (!userData?.id) {
           console.error('User ID is not defined.');
+          setLoading(false); // Ensure loading state is reset on error
           return;
         }
   
         const updateParams = {
           TableName: 'invest',
           Key: {
-            UserID: { S: userData.id.toString() }, // Ensure userData.id is a string
+            UserID: { S: userData.id.toString() },
           },
           UpdateExpression: 'SET tonBalance = tonBalance - :amount, monthlyInvest = list_append(monthlyInvest, :newInvest)',
           ExpressionAttributeValues: {
-            ':amount': { N: amount.toString() }, // Ensure amount is treated as a number
+            ':amount': { N: amount.toString() },
             ':newInvest': {
               L: [
                 {
@@ -122,9 +125,12 @@ const FriendsTab = () => {
         setTonBalance((prevBalance) => (prevBalance || 0) - amount); // Update local balance
       } catch (error) {
         console.error('Error processing transaction:', error);
+      } finally {
+        setLoading(false); // Reset loading state after the transaction completes or fails
       }
     }
   };
+  
   
 
   return (
@@ -157,22 +163,30 @@ const FriendsTab = () => {
           type="number"
           value={amount}
           onChange={handleAmountChange}
-          className="w-full border-2 border-white rounded-lg mt-2 p-2 text-sm"
+          className="w-full border-2 border-white rounded-lg mt-2 p-2 text-black text-sm" 
           placeholder="Enter amount"
           min={1}
         />
       </div>
 
       <div className="mt-3">
-        <button
-          onClick={handleTransaction}
-          className={`w-full max-w-xs border-2 border-transparent rounded-lg ${
-            parseFloat(amount.toString()) >= 10000 ? 'bg-blue-500' : 'bg-[rgba(109,109,109,0.4)]'
-          } text-[rgb(170,170,170)] py-3 px-4 font-semibold text-lg ${buttonShake ? 'animate-shake' : ''}`}
-          disabled={parseFloat(amount.toString()) < 10000}
-        >
-          Generate Transaction
-        </button>
+                <div className="w-full border-2 border-white rounded-lg mt-2 p-2 flex justify-between items-center">
+                    <p className="text-white text-sm">Min Deposit:</p>
+                    <p className="text-white text-sm">0.01 TON</p>
+                </div>
+            </div>
+
+      <div className="mt-4 flex justify-center">
+      <button
+  onClick={handleTransaction}
+  className={`w-full max-w-xs border-2 border-transparent rounded-lg ${
+    parseFloat(amount.toString()) >= 10000 ? 'bg-blue-500' : 'bg-[rgba(109,109,109,0.4)]'
+  } text-[rgb(170,170,170)] py-3 px-4 font-semibold text-lg ${buttonShake ? 'animate-shake' : ''}`}
+  disabled={parseFloat(amount.toString()) < 10000 || loading} // Disable button while loading
+>
+  {loading ? 'Loading...' : 'Generate Transaction'}
+</button>
+
       </div>
 
       <div className="mt-3 bg-yellow-800 p-4 border-2 border-dotted border-[gold] rounded-lg">
