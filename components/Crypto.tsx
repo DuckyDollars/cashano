@@ -39,10 +39,10 @@ const FriendsTab = () => {
 
         try {
           const params = {
-            TableName: 'PandaPals',
+            TableName: 'invest', // Updated table name
             KeyConditionExpression: 'UserID = :userID',
             ExpressionAttributeValues: {
-              ':userID': { N: userData.id.toString() },
+              ':userID': { S: userData.id.toString() },
             },
           };
 
@@ -55,7 +55,7 @@ const FriendsTab = () => {
             setWalletAddress('Connect wallet first');
           }
         } catch (error) {
-          console.error('Error fetching wallet address:', error);
+          console.error('Error accessing DynamoDB:', error);
           setError('Error accessing DynamoDB. Please try again later.');
         } finally {
           setLoading(false);
