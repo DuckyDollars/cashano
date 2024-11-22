@@ -1,4 +1,4 @@
-'use client' 
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
@@ -68,37 +68,48 @@ const TasksTab = () => {
   const handleTabSwitch = (tab: 'weekly' | 'monthly' | 'yearly') => {
     setActiveTab(tab);
     setActiveTaskIndex(null); // Reset active task when switching tabs
+    localStorage.removeItem('selectedTask'); // Clear local storage when switching tabs
   };
 
   const handleTaskClick = (index: number) => {
     setActiveTaskIndex(index); // Set the active task when a task is clicked
     setButtonText("Generate Transaction"); // Reset the button text after task is selected
+
+    const task = tasks[index]; // Get the selected task
+    // Save task price and title in localStorage
+    localStorage.setItem('selectedTask', JSON.stringify({
+      price: task.price,
+      title: task.title
+    }));
   };
 
   const handleTransaction = async () => {
-    console.log("activeTaskIndex:", activeTaskIndex);
-    console.log("userData.id:", userData.id);
-  
     if (activeTaskIndex === null || userData.id === null) {
       setButtonText('Please select a task');
       return;
     }
-  
-    const task = tasks[activeTaskIndex];  // Get the selected task using the activeTaskIndex
-    const price = task.price; // Price of the active task
-  
+
+    // Retrieve the selected task details from localStorage
+    const selectedTask = JSON.parse(localStorage.getItem('selectedTask') || '{}');
+    const { price, title } = selectedTask;
+
+    if (!price || !title) {
+      setButtonText('Please select a valid task');
+      return;
+    }
+
     try {
       const userParams = {
         TableName: INVEST_TABLE_NAME,
         Key: { UserID: userData.id },
       };
-  
+
       const userDataResponse = await dynamoDB.get(userParams).promise();
       const userInvestData = userDataResponse.Item;
-  
+
       if (userInvestData) {
         const tonBalance = userInvestData.tonBalance || 0;
-  
+
         if (tonBalance >= price) {
           const newTonBalance = tonBalance - price;
           const updateParams = {
@@ -112,12 +123,13 @@ const TasksTab = () => {
             ExpressionAttributeValues: {
               ':newTonBalance': newTonBalance,
               ':transactionDate': new Date().toISOString(),
-              ':transactionTitle': `Transaction for Task: ${task.title}`,
+              ':transactionTitle': `Transaction for Task: ${title}`,
             },
           };
-  
+
           await dynamoDB.update(updateParams).promise();
           setButtonText('Transaction Successful');
+          localStorage.removeItem('selectedTask'); // Clear task selection after successful transaction
         } else {
           setButtonText('Insufficient Balance');
         }
@@ -129,7 +141,6 @@ const TasksTab = () => {
       setButtonText('Transaction Failed');
     }
   };
-  
 
   return (
     <div className="quest-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
