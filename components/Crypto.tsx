@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
-import { WebApp } from '@twa-dev/sdk';  // Ensure this import is correct
+import { WebApp } from '@twa-dev/sdk';
 
 // AWS Configuration
 AWS.config.update({
@@ -14,15 +14,17 @@ AWS.config.update({
 });
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const TASKS_TABLE_NAME = 'Tasks'; // DynamoDB table name
-const INVEST_TABLE_NAME = 'invest'; // DynamoDB table name for user data
+const TASKS_TABLE_NAME = 'Tasks'; // DynamoDB table name for tasks
+const INVEST_TABLE_NAME = 'invest'; // DynamoDB table name for user investments
 
 const TasksTab = () => {
   const [tasks, setTasks] = useState([]);
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null); // Track active task
-  const [loading, setLoading] = useState(false); // Loading state for button
-  const [userData, setUserData] = useState<any>(null); // User data to fetch tonBalance
+  const [buttonText, setButtonText] = useState("Generate Transaction"); // For button text
+
+  // User data state
+  const [userData, setUserData] = useState<{ id: number | null }>({ id: null });
 
   // Fetch tasks from DynamoDB
   const fetchTasks = async () => {
@@ -36,73 +38,85 @@ const TasksTab = () => {
   };
 
   useEffect(() => {
-    fetchTasks();
-    // Fetch user data from WebApp SDK
-    if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
-      const user = WebApp.initDataUnsafe.user as UserData;
-      setUserData(user);
+    if (typeof window !== 'undefined' && typeof WebApp !== 'undefined' && WebApp.initDataUnsafe?.user) {
+      const user = WebApp.initDataUnsafe.user as { id: number };
+      setUserData({ id: user.id });
     }
   }, []);
+  
 
   // Filter tasks based on the active tab
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
+
+  // Handle tab switch
+  const handleTabSwitch = (tab: 'weekly' | 'monthly' | 'yearly') => {
+    setActiveTab(tab);
+    setActiveTaskIndex(null); // Reset active task when switching tabs
+  };
 
   // Handle task click
   const handleTaskClick = (index: number) => {
     setActiveTaskIndex(index); // Set the active task on click
   };
 
+  // Handle Transaction generation
   const handleTransaction = async () => {
-    if (activeTaskIndex === null || !userData) return;
+    if (activeTaskIndex === null) return;
 
-    setLoading(true); // Set loading state for the button
-
-    const selectedTask = filteredTasks[activeTaskIndex];
-    const taskPrice = selectedTask.price; // Price of the task
-
-    // Fetch user's tonBalance from the invest table
-    const params = {
-      TableName: INVEST_TABLE_NAME,
-      Key: { UserID: userData.id },
-    };
+    setButtonText('Loading...'); // Change button text to Loading...
+    const task = tasks[activeTaskIndex];
+    const price = task.price; // Price of the active task (in TonCoin)
 
     try {
-      const userDataResponse = await dynamoDB.get(params).promise();
-      const userDataItem = userDataResponse.Item;
-
-      if (!userDataItem || userDataItem.tonBalance < taskPrice) {
-        alert("Insufficient balance!");
-        setLoading(false);
-        return;
-      }
-
-      // Proceed with transaction
-      const updatedTonBalance = userDataItem.tonBalance - taskPrice;
-
-      // Prepare the update data
-      const transactionMetadata = {
+      // Fetch the user's current tonBalance from the 'invest' table
+      const userParams = {
         TableName: INVEST_TABLE_NAME,
-        Key: { UserID: userData.id },
-        UpdateExpression: "SET tonBalance = :tonBalance, #indexTitle = :indexTitle, transactionDate = :transactionDate",
-        ExpressionAttributeNames: {
-          '#indexTitle': 'indexTitle',
-        },
-        ExpressionAttributeValues: {
-          ":tonBalance": updatedTonBalance,
-          ":indexTitle": selectedTask.title,
-          ":transactionDate": new Date().toISOString(),
+        Key: {
+          UserID: userData.id,
         },
       };
 
-      // Update the user's data in DynamoDB
-      await dynamoDB.update(transactionMetadata).promise();
+      const userDataResponse = await dynamoDB.get(userParams).promise();
+      const userInvestData = userDataResponse.Item;
 
-      // Transaction successful, update the button text and reset state
-      setLoading(false);
-      alert("Transaction successful!");
+      if (userInvestData) {
+        const tonBalance = userInvestData.tonBalance || 0;
+
+        // Check if the user has enough balance
+        if (tonBalance >= price) {
+          // Deduct the price from the tonBalance
+          const newTonBalance = tonBalance - price;
+
+          // Update the tonBalance in DynamoDB
+          const updateParams = {
+            TableName: INVEST_TABLE_NAME,
+            Key: {
+              UserID: userData.id,
+            },
+            UpdateExpression: 'set tonBalance = :newTonBalance, #transactionDate = :transactionDate, #transactionTitle = :transactionTitle',
+            ExpressionAttributeNames: {
+              '#transactionDate': 'transactionDate',
+              '#transactionTitle': 'transactionTitle',
+            },
+            ExpressionAttributeValues: {
+              ':newTonBalance': newTonBalance,
+              ':transactionDate': new Date().toISOString(),
+              ':transactionTitle': `Transaction for Task: ${task.title}`,
+            },
+          };
+
+          await dynamoDB.update(updateParams).promise();
+
+          setButtonText('Transaction Successful');
+        } else {
+          setButtonText('Insufficient Balance');
+        }
+      } else {
+        setButtonText('User Not Found');
+      }
     } catch (error) {
-      console.error("Error during transaction:", error);
-      setLoading(false);
+      console.error('Error processing transaction:', error);
+      setButtonText('Transaction Failed');
     }
   };
 
@@ -189,7 +203,7 @@ const TasksTab = () => {
               : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
           }`}
         >
-          {loading ? 'Loading...' : 'Generate Transaction'}
+          {buttonText}
         </button>
       </div>
     </div>
