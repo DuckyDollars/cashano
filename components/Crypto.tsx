@@ -18,28 +18,25 @@ const dynamoDBClient = new DynamoDBClient({
 const FriendsTab = () => {
   const [userData, setUserData] = useState<{ id: number } | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [amount, setAmount] = useState<number | string>('');
+  const [amount, setAmount] = useState<number | string>(''); 
   const [tonBalance, setTonBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [buttonShake, setButtonShake] = useState(false);
 
   useEffect(() => {
-    // Ensure the code runs only in the client-side environment
     if (typeof window !== 'undefined' && WebApp.initDataUnsafe.user) {
-      // Set user data in state
       setUserData(WebApp.initDataUnsafe.user as { id: number });
     }
   }, []);
 
-  // Fetch Wallet Address and Ton Balance
   useEffect(() => {
     if (userData?.id) {
       const fetchData = async () => {
         setLoading(true);
         setError(null);
-        setWalletAddress(null); // Reset wallet address before fetching
-        setTonBalance(null); // Reset tonBalance before fetching
+        setWalletAddress(null); 
+        setTonBalance(null);
 
         try {
           const params = {
@@ -72,7 +69,6 @@ const FriendsTab = () => {
     }
   }, [userData]);
 
-  // Handle amount change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (/^\d*\.?\d{0,2}$/.test(value)) {
@@ -82,24 +78,31 @@ const FriendsTab = () => {
 
   const handleTransaction = async () => {
     if (typeof amount === 'number' && tonBalance !== null) {
-      if (amount > tonBalance) {
-        // Trigger shake animation if the amount is higher than the tonBalance
+      if (amount < 10000) {
+        // Trigger shake and vibration for amounts less than 10000
         setButtonShake(true);
         setTimeout(() => setButtonShake(false), 500); // Reset shake after 500ms
         if (navigator.vibrate) navigator.vibrate(200); // Vibrate if supported
         return;
       }
-  
-      // Proceed with the transaction if the amount is valid
+
+      setLoading(true); // Set loading state to true when starting the transaction
       try {
-        setLoading(true); // Set loading state to true when starting the transaction
-  
         if (!userData?.id) {
           console.error('User ID is not defined.');
-          setLoading(false); // Ensure loading state is reset on error
+          setLoading(false); 
           return;
         }
-  
+
+        if (amount > tonBalance) {
+          // If the amount is greater than balance, trigger shake and vibration
+          setButtonShake(true);
+          setTimeout(() => setButtonShake(false), 500);
+          if (navigator.vibrate) navigator.vibrate(200);
+          setLoading(false);
+          return;
+        }
+
         const updateParams = {
           TableName: 'invest',
           Key: {
@@ -120,18 +123,16 @@ const FriendsTab = () => {
             },
           },
         };
-  
+
         await dynamoDBClient.send(new UpdateItemCommand(updateParams));
         setTonBalance((prevBalance) => (prevBalance || 0) - amount); // Update local balance
       } catch (error) {
         console.error('Error processing transaction:', error);
       } finally {
-        setLoading(false); // Reset loading state after the transaction completes or fails
+        setLoading(false); 
       }
     }
   };
-  
-  
 
   return (
     <div className="friends-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
@@ -170,23 +171,22 @@ const FriendsTab = () => {
       </div>
 
       <div className="mt-3">
-                <div className="w-full border-2 border-white rounded-lg mt-2 p-2 flex justify-between items-center">
-                    <p className="text-white text-sm">Min Deposit:</p>
-                    <p className="text-white text-sm">0.01 TON</p>
-                </div>
-            </div>
+        <div className="w-full border-2 border-white rounded-lg mt-2 p-2 flex justify-between items-center">
+          <p className="text-white text-sm">Min Deposit:</p>
+          <p className="text-white text-sm">0.01 TON</p>
+        </div>
+      </div>
 
       <div className="mt-4 flex justify-center">
-      <button
-  onClick={handleTransaction}
-  className={`w-full max-w-xs border-2 border-transparent rounded-lg ${
-    parseFloat(amount.toString()) >= 10000 ? 'bg-blue-500' : 'bg-[rgba(109,109,109,0.4)]'
-  } text-[rgb(170,170,170)] py-3 px-4 font-semibold text-lg ${buttonShake ? 'animate-shake' : ''}`}
-  disabled={parseFloat(amount.toString()) < 10000 || loading} // Disable button while loading
->
-  {loading ? 'Loading...' : 'Generate Transaction'}
-</button>
-
+        <button
+          onClick={handleTransaction}
+          className={`w-full max-w-xs border-2 border-transparent rounded-lg ${
+            parseFloat(amount.toString()) >= 10000 ? 'bg-blue-500 text-black' : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
+          } py-3 px-4 font-semibold text-lg ${buttonShake ? 'animate-shake' : ''}`}
+          disabled={parseFloat(amount.toString()) < 10000 || loading}
+        >
+          {loading ? 'Loading...' : 'Generate Transaction'}
+        </button>
       </div>
 
       <div className="mt-3 bg-yellow-800 p-4 border-2 border-dotted border-[gold] rounded-lg">
