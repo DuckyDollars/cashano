@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
 
-
 // AWS Configuration
 AWS.config.update({
   region: 'eu-north-1',
@@ -18,8 +17,18 @@ const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const TASKS_TABLE_NAME = 'Tasks'; // DynamoDB table name for tasks
 const INVEST_TABLE_NAME = 'invest'; // DynamoDB table name for user investments
 
+// Define Task type
+type Task = {
+  title: string;
+  price: number;
+  reward: string;
+  icon?: string;
+  type: 'weekly' | 'monthly' | 'yearly'; // Adjust this type based on your actual data
+};
+
 const TasksTab = () => {
-  const [tasks, setTasks] = useState([]);
+  // Update state to expect an array of Task objects
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null); // Track active task
   const [buttonText, setButtonText] = useState("Generate Transaction"); // For button text
@@ -32,7 +41,8 @@ const TasksTab = () => {
     try {
       const params = { TableName: TASKS_TABLE_NAME };
       const data = await dynamoDB.scan(params).promise();
-      setTasks(data.Items || []);
+      // Ensure that the data.Items is cast to the correct type
+      setTasks((data.Items || []) as Task[]);
     } catch (error) {
       console.error('Error fetching tasks:', error);
     }
@@ -43,8 +53,8 @@ const TasksTab = () => {
       const user = WebApp.initDataUnsafe.user as { id: number };
       setUserData({ id: user.id });
     }
+    fetchTasks(); // Fetch tasks on mount
   }, []);
-  
 
   // Filter tasks based on the active tab
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
