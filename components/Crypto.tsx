@@ -80,7 +80,6 @@ const FriendsTab = () => {
     }
   };
 
-  // Handle "Generate Transaction" button click
   const handleTransaction = async () => {
     if (typeof amount === 'number' && tonBalance !== null) {
       if (amount > tonBalance) {
@@ -90,20 +89,35 @@ const FriendsTab = () => {
         if (navigator.vibrate) navigator.vibrate(200); // Vibrate if supported
         return;
       }
-
+  
       // Proceed with the transaction if the amount is valid
       try {
+        if (!userData?.id) {
+          console.error('User ID is not defined.');
+          return;
+        }
+  
         const updateParams = {
           TableName: 'invest',
           Key: {
-            UserID: { S: userData?.id.toString() },
+            UserID: { S: userData.id.toString() }, // Ensure userData.id is a string
           },
           UpdateExpression: 'SET tonBalance = tonBalance - :amount, monthlyInvest = list_append(monthlyInvest, :newInvest)',
           ExpressionAttributeValues: {
-            ':amount': { N: amount.toString() },
-            ':newInvest': { L: [{ M: { date: { S: new Date().toISOString() }, amount: { N: amount.toString() } } }] },
+            ':amount': { N: amount.toString() }, // Ensure amount is treated as a number
+            ':newInvest': {
+              L: [
+                {
+                  M: {
+                    date: { S: new Date().toISOString() },
+                    amount: { N: amount.toString() },
+                  },
+                },
+              ],
+            },
           },
         };
+  
         await dynamoDBClient.send(new UpdateItemCommand(updateParams));
         setTonBalance((prevBalance) => (prevBalance || 0) - amount); // Update local balance
       } catch (error) {
@@ -111,6 +125,7 @@ const FriendsTab = () => {
       }
     }
   };
+  
 
   return (
     <div className="friends-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
