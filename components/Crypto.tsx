@@ -22,16 +22,26 @@ const FriendsTab = () => {
         },
     });
 
+    // State to manage WebApp initialization readiness
+    const [isWebAppReady, setIsWebAppReady] = useState(false);
+
     useEffect(() => {
-        if (typeof window !== 'undefined' && WebApp.initDataUnsafe.user) {
-            const user = WebApp.initDataUnsafe.user;
-            setUserData(user);
+        if (typeof window !== 'undefined') {
+            console.log('WebApp:', WebApp);  // Log the WebApp object for debugging
 
-            // Fetch wallet address from DynamoDB
-            fetchWalletAddress(user.id);
+            const user = WebApp.initDataUnsafe?.user;
+
+            if (user && user.id) {
+                setUserData(user);
+                fetchWalletAddress(user.id);
+                setIsWebAppReady(true);  // Set WebApp as ready after fetching user data
+            } else {
+                console.error('User data is not available or user ID is missing.');
+            }
         }
-    }, []);
+    }, [isWebAppReady]);  // Re-run the effect if WebApp is initialized
 
+    // Fetch wallet address from DynamoDB
     const fetchWalletAddress = async (userId: number) => {
         try {
             const command = new QueryCommand({
@@ -45,7 +55,6 @@ const FriendsTab = () => {
 
             console.log('DynamoDB Response:', response);
 
-            // Check if Items exist and WalletAddress is present
             if (response.Items && response.Items.length > 0) {
                 const wallet = response.Items[0]?.WalletAddress?.S;
                 if (wallet) {
@@ -62,6 +71,7 @@ const FriendsTab = () => {
         }
     };
 
+    // Handle amount input change
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setAmount(value);
@@ -76,6 +86,7 @@ const FriendsTab = () => {
         }
     };
 
+    // Handle the transaction generation
     const handleGenerateTransaction = async () => {
         if (parseInt(amount) < 250) {
             setError('Minimum Invest = 250');
@@ -92,6 +103,7 @@ const FriendsTab = () => {
                 },
             });
             const response = await client.send(command);
+
             if (response.Items && response.Items.length > 0) {
                 const tonBalance = parseInt(response.Items[0].TonBalance.N || '0');
                 if (tonBalance >= parseInt(amount)) {
