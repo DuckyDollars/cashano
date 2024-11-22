@@ -78,12 +78,12 @@ const FriendsTab = () => {
 
   const handleTransaction = async () => {
     const numericAmount = parseFloat(amount.toString()); // Ensure amount is a number
-
+  
     if (isNaN(numericAmount)) {
       console.log('Invalid amount');
       return; // Do nothing if the amount is invalid
     }
-
+  
     if (numericAmount < 10000) {
       // Trigger shake and vibration for amounts less than 10000
       setButtonShake(true);
@@ -91,16 +91,16 @@ const FriendsTab = () => {
       if (navigator.vibrate) navigator.vibrate(200); // Vibrate if supported
       return;
     }
-
+  
     setLoading(true); // Set loading state to true when starting the transaction
-
+  
     try {
       if (!userData?.id) {
         console.error('User ID is not defined.');
         setLoading(false); 
         return;
       }
-
+  
       if (tonBalance !== null && numericAmount > tonBalance) {
         // If the amount is greater than balance, trigger shake and vibration
         setButtonShake(true);
@@ -109,8 +109,8 @@ const FriendsTab = () => {
         setLoading(false);
         return;
       }
-      
-
+  
+      // Deduct the amount from tonBalance and add to monthlyInvest in DynamoDB
       const updateParams = {
         TableName: 'invest',
         Key: {
@@ -131,15 +131,18 @@ const FriendsTab = () => {
           },
         },
       };
-
+  
       await dynamoDBClient.send(new UpdateItemCommand(updateParams));
       setTonBalance((prevBalance) => (prevBalance || 0) - numericAmount); // Update local balance
+  
     } catch (error) {
       console.error('Error processing transaction:', error);
+      setError('Error processing transaction. Please try again later.');
     } finally {
       setLoading(false); 
     }
   };
+  
 
   // Ensure numericAmount is calculated correctly
   const numericAmount = parseFloat(amount.toString());
