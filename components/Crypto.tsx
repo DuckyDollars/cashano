@@ -34,7 +34,7 @@ const TasksTab = () => {
   const [buttonText, setButtonText] = useState("Generate Transaction"); // For button text
 
   // User data state
-  const [userData, setUserData] = useState<{ id: number | null }>({ id: null });
+  const [userData, setUserData] = useState<{ id: string | null }>({ id: null });
 
   // Fetch tasks from DynamoDB
   const fetchTasks = async () => {
@@ -50,11 +50,19 @@ const TasksTab = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && typeof WebApp !== 'undefined' && WebApp.initDataUnsafe?.user) {
-      const user = WebApp.initDataUnsafe.user as { id: number };
-      setUserData({ id: user.id });
+      const user = WebApp.initDataUnsafe.user;
+      
+      if (user && typeof user.id === 'string') {
+        setUserData({ id: user.id });
+      } else {
+        console.error('User data is missing the id or is not a string.');
+      }
+    } else {
+      console.error('WebApp.initDataUnsafe or user is not available.');
     }
     fetchTasks(); // Fetch tasks on mount
   }, []);
+  
 
   // Filter tasks based on the active tab
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
@@ -72,7 +80,7 @@ const TasksTab = () => {
 
   // Handle Transaction generation
   const handleTransaction = async () => {
-    if (activeTaskIndex === null) return;
+    if (activeTaskIndex === null || userData.id === null) return;
 
     setButtonText('Loading...'); // Change button text to Loading...
     const task = tasks[activeTaskIndex];
@@ -83,7 +91,7 @@ const TasksTab = () => {
       const userParams = {
         TableName: INVEST_TABLE_NAME,
         Key: {
-          UserID: userData.id,
+          UserID: userData.id, // Using UserID as partition key
         },
       };
 
@@ -102,7 +110,7 @@ const TasksTab = () => {
           const updateParams = {
             TableName: INVEST_TABLE_NAME,
             Key: {
-              UserID: userData.id,
+              UserID: userData.id, // Using UserID as partition key
             },
             UpdateExpression: 'set tonBalance = :newTonBalance, #transactionDate = :transactionDate, #transactionTitle = :transactionTitle',
             ExpressionAttributeNames: {
