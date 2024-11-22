@@ -76,26 +76,29 @@ const TasksTab = () => {
   };
 
   const handleTransaction = async () => {
+    console.log("activeTaskIndex:", activeTaskIndex);
+    console.log("userData.id:", userData.id);
+  
     if (activeTaskIndex === null || userData.id === null) {
       setButtonText('Please select a task');
       return;
     }
-
+  
     const task = tasks[activeTaskIndex];  // Get the selected task using the activeTaskIndex
     const price = task.price; // Price of the active task
-
+  
     try {
       const userParams = {
         TableName: INVEST_TABLE_NAME,
         Key: { UserID: userData.id },
       };
-
+  
       const userDataResponse = await dynamoDB.get(userParams).promise();
       const userInvestData = userDataResponse.Item;
-
+  
       if (userInvestData) {
         const tonBalance = userInvestData.tonBalance || 0;
-
+  
         if (tonBalance >= price) {
           const newTonBalance = tonBalance - price;
           const updateParams = {
@@ -112,7 +115,7 @@ const TasksTab = () => {
               ':transactionTitle': `Transaction for Task: ${task.title}`,
             },
           };
-
+  
           await dynamoDB.update(updateParams).promise();
           setButtonText('Transaction Successful');
         } else {
@@ -126,6 +129,7 @@ const TasksTab = () => {
       setButtonText('Transaction Failed');
     }
   };
+  
 
   return (
     <div className="quest-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
