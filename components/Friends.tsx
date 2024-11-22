@@ -42,9 +42,11 @@ const FriendsTab = () => {
           const data = await client.send(command);
           const items = data.Items || [];
 
-          const friendsList = items.length > 0 && items[0].friends && Array.isArray(items[0].friends.L)
-  ? items[0].friends.L.map((friend) => (friend && friend.S ? friend.S : ""))
-  : [];
+          const friendsList = items.length > 0 &&
+            items[0].friends &&
+            Array.isArray(items[0].friends.L)
+            ? items[0].friends.L.map((friend) => (friend && friend.S ? friend.S : ""))
+            : [];
 
           setFriends(friendsList); // Update state with the friends list
         }
@@ -65,7 +67,7 @@ const FriendsTab = () => {
   };
 
   return (
-    <div className="friends-tab-con px-4 pb-24 transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
+    <div className="friends-tab-con px-4 h-screen transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
       <div className="pt-8 space-y-1">
         <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
         <div className="text-xl">
@@ -112,7 +114,7 @@ const FriendsTab = () => {
         </div>
       )}
 
-      <div className="fixed bottom-[70px] left-0 right-0 py-14 flex justify-center bg-gradient-to-t from-green-500 to-teal-500">
+      <div className="fixed left-0 right-0 flex justify-center bg-[#0000000] mt-[180px]">
         <div className="w-full max-w-md px-4">
           <button
             className="w-full bg-[#4c9ce2] text-white py-4 rounded-xl text-lg font-medium"
