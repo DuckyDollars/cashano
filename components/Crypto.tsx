@@ -1,220 +1,199 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { DynamoDBClient, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
-import { crypto } from '@/images';
-import Image from 'next/image';
-import WebApp from '@twa-dev/sdk';
+import React, { useEffect, useState } from 'react';
+import AWS from 'aws-sdk';
+import { WebApp } from '@twa-dev/sdk';  // Ensure this import is correct
 
-// DynamoDB Client Setup
-const dynamoDBClient = new DynamoDBClient({
+// AWS Configuration
+AWS.config.update({
   region: 'eu-north-1',
-  credentials: {
+  credentials: new AWS.Credentials({
     accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
     secretAccessKey: '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',
-  },
+  }),
 });
 
-const FriendsTab = () => {
-  const [userData, setUserData] = useState<{ id: number } | null>(null);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [amount, setAmount] = useState<number | string>(''); 
-  const [tonBalance, setTonBalance] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [buttonShake, setButtonShake] = useState(false);
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const TASKS_TABLE_NAME = 'Tasks'; // DynamoDB table name
+const INVEST_TABLE_NAME = 'invest'; // DynamoDB table name for user data
+
+const TasksTab = () => {
+  const [tasks, setTasks] = useState([]);
+  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+  const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null); // Track active task
+  const [loading, setLoading] = useState(false); // Loading state for button
+  const [userData, setUserData] = useState<any>(null); // User data to fetch tonBalance
+
+  // Fetch tasks from DynamoDB
+  const fetchTasks = async () => {
+    try {
+      const params = { TableName: TASKS_TABLE_NAME };
+      const data = await dynamoDB.scan(params).promise();
+      setTasks(data.Items || []);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && WebApp.initDataUnsafe.user) {
-      setUserData(WebApp.initDataUnsafe.user as { id: number });
+    fetchTasks();
+    // Fetch user data from WebApp SDK
+    if (typeof window !== "undefined" && WebApp.initDataUnsafe.user) {
+      const user = WebApp.initDataUnsafe.user as UserData;
+      setUserData(user);
     }
   }, []);
 
-  useEffect(() => {
-    if (userData?.id) {
-      const fetchData = async () => {
-        setLoading(true);
-        setError(null);
-        setWalletAddress(null); 
-        setTonBalance(null);
+  // Filter tasks based on the active tab
+  const filteredTasks = tasks.filter((task) => task.type === activeTab);
 
-        try {
-          const params = {
-            TableName: 'invest',
-            KeyConditionExpression: 'UserID = :userID',
-            ExpressionAttributeValues: {
-              ':userID': { S: userData.id.toString() },
-            },
-          };
-
-          const { Items } = await dynamoDBClient.send(new QueryCommand(params));
-
-          if (Items && Items.length > 0) {
-            const wallet = Items[0].WalletAddress?.S;
-            const balance = Items[0].tonBalance?.N;
-            setWalletAddress(wallet ? `${wallet.slice(0, 12)}....${wallet.slice(-12)}` : 'Connect wallet first');
-            setTonBalance(balance ? parseFloat(balance) : 0);
-          } else {
-            setWalletAddress('Connect wallet first');
-          }
-        } catch (error) {
-          console.error('Error accessing DynamoDB:', error);
-          setError('Error accessing DynamoDB. Please try again later.');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchData();
-    }
-  }, [userData]);
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (/^\d*\.?\d{0,2}$/.test(value)) {
-      setAmount(value);
-    }
+  // Handle task click
+  const handleTaskClick = (index: number) => {
+    setActiveTaskIndex(index); // Set the active task on click
   };
 
   const handleTransaction = async () => {
-    const numericAmount = parseFloat(amount.toString()); // Ensure amount is a number
-  
-    if (isNaN(numericAmount)) {
-      console.log('Invalid amount');
-      return; // Do nothing if the amount is invalid
-    }
-  
-    if (numericAmount < 10000) {
-      // Trigger shake and vibration for amounts less than 10000
-      setButtonShake(true);
-      setTimeout(() => setButtonShake(false), 500); // Reset shake after 500ms
-      if (navigator.vibrate) navigator.vibrate(200); // Vibrate if supported
-      return;
-    }
-  
-    setLoading(true); // Set loading state to true when starting the transaction
-  
+    if (activeTaskIndex === null || !userData) return;
+
+    setLoading(true); // Set loading state for the button
+
+    const selectedTask = filteredTasks[activeTaskIndex];
+    const taskPrice = selectedTask.price; // Price of the task
+
+    // Fetch user's tonBalance from the invest table
+    const params = {
+      TableName: INVEST_TABLE_NAME,
+      Key: { UserID: userData.id },
+    };
+
     try {
-      if (!userData?.id) {
-        console.error('User ID is not defined.');
+      const userDataResponse = await dynamoDB.get(params).promise();
+      const userDataItem = userDataResponse.Item;
+
+      if (!userDataItem || userDataItem.tonBalance < taskPrice) {
+        alert("Insufficient balance!");
         setLoading(false);
         return;
       }
-  
-      if (tonBalance !== null && numericAmount > tonBalance) {
-        // If the amount is greater than balance, trigger shake and vibration
-        setButtonShake(true);
-        setTimeout(() => setButtonShake(false), 500);
-        if (navigator.vibrate) navigator.vibrate(200);
-        setLoading(false);
-        return;
-      }
-  
-      const updateParams = {
-        TableName: 'invest',
-        Key: {
-          UserID: { S: userData.id.toString() },
+
+      // Proceed with transaction
+      const updatedTonBalance = userDataItem.tonBalance - taskPrice;
+
+      // Prepare the update data
+      const transactionMetadata = {
+        TableName: INVEST_TABLE_NAME,
+        Key: { UserID: userData.id },
+        UpdateExpression: "SET tonBalance = :tonBalance, #indexTitle = :indexTitle, transactionDate = :transactionDate",
+        ExpressionAttributeNames: {
+          '#indexTitle': 'indexTitle',
         },
-        UpdateExpression: 'SET tonBalance = tonBalance - :amount, monthlyInvest = if_not_exists(monthlyInvest, :emptyList), monthlyInvest = list_append(monthlyInvest, :newInvest)',
         ExpressionAttributeValues: {
-          ':amount': { N: numericAmount.toString() },
-          ':newInvest': {
-            L: [
-              {
-                M: {
-                  date: { S: new Date().toISOString() },
-                  amount: { N: numericAmount.toString() },
-                },
-              },
-            ],
-          },
-          ':emptyList': { L: [] }, // Default value to set if monthlyInvest does not exist
+          ":tonBalance": updatedTonBalance,
+          ":indexTitle": selectedTask.title,
+          ":transactionDate": new Date().toISOString(),
         },
       };
-  
-      const result = await dynamoDBClient.send(new UpdateItemCommand(updateParams));
-      console.log('DynamoDB update result:', result);
-  
-      setTonBalance((prevBalance) => (prevBalance || 0) - numericAmount); // Update local balance
+
+      // Update the user's data in DynamoDB
+      await dynamoDB.update(transactionMetadata).promise();
+
+      // Transaction successful, update the button text and reset state
+      setLoading(false);
+      alert("Transaction successful!");
     } catch (error) {
-      console.error('Error processing transaction:', error);
-      setError('Error processing transaction. Please try again later.');
-    } finally {
-      setLoading(false); 
+      console.error("Error during transaction:", error);
+      setLoading(false);
     }
   };
-  
-  
-
-  // Ensure numericAmount is calculated correctly
-  const numericAmount = parseFloat(amount.toString());
 
   return (
-    <div className="friends-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
-      {/* Header Section */}
-      <div className="flex justify-between items-center pt-4 w-full px-2">
-        <div className="flex items-center space-x-2">
-          <Image src={crypto} alt="" width={32} height={32} className="rounded-full" />
-          <span className="text-white font-semibold">Crypto</span>
-        </div>
-        <span className="text-white font-semibold">Investment</span>
-      </div>
-
-      <div className="mt-3">
-        <p className="text-white font-semibold">Your wallet</p>
-        <div className="w-full border-2 border-white rounded-lg mt-2 p-2">
-          {loading ? (
-            <p className="text-white text-sm">Loading...</p>
-          ) : error ? (
-            <p className="text-red-500 text-sm">{error}</p>
-          ) : (
-            <p className="text-white text-sm">{walletAddress}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-3">
-        <p className="text-white font-semibold">Amount</p>
-        <input
-          type="number"
-          value={amount}
-          onChange={handleAmountChange}
-          className="w-full border-2 border-white rounded-lg mt-2 p-2 text-black text-sm" 
-          placeholder="Enter amount"
-          min={1}
-        />
-      </div>
-
-      <div className="mt-3">
-        <div className="w-full border-2 border-white rounded-lg mt-2 p-2 flex justify-between items-center">
-          <p className="text-white text-sm">Min Deposit:</p>
-          <p className="text-white text-sm">0.01 TON</p>
-        </div>
-      </div>
-
-      <div className="mt-4 flex justify-center">
+    <div className="quest-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
+      {/* Tab Switcher */}
+      <div className="flex gap-4 mt-4">
         <button
-          onClick={handleTransaction}
-          className={`w-full max-w-xs border-2 border-transparent rounded-lg ${
-            numericAmount >= 10000 ? 'bg-blue-500 text-black' : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
-          } py-3 px-4 font-semibold text-lg ${buttonShake ? 'animate-shake' : ''}`}
-          disabled={isNaN(numericAmount) || numericAmount < 10000 || loading}
+          onClick={() => handleTabSwitch('weekly')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
+            activeTab === 'weekly' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'
+          }`}
         >
-          {loading ? 'Loading...' : 'Generate Transaction'}
+          Weekly
+        </button>
+        <button
+          onClick={() => handleTabSwitch('monthly')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
+            activeTab === 'monthly' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'
+          }`}
+        >
+          Monthly
+        </button>
+        <button
+          onClick={() => handleTabSwitch('yearly')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
+            activeTab === 'yearly' ? 'bg-[green] text-black' : 'bg-[#151515] text-white'
+          }`}
+        >
+          Yearly
         </button>
       </div>
 
-      <div className="mt-3 bg-yellow-800 p-4 border-2 border-dotted border-[gold] rounded-lg">
-        <div className="text-[gold] text-center py-2">
-          <p className="font-semibold">Note</p>
-        </div>
-        <div className="text-white text-sm mt-2">
-          <p>If you send an amount less than the minimum deposit, It will not be added to your account.</p>
-          <p className="mt-2">You are only allowed to send through the connected wallet. If you send from other wallets or make deposit through exchanges, the funds will not be added to your account.</p>
-        </div>
+      {/* Tasks List */}
+      <div className="mt-4 mb-20 bg-[#151516] rounded-xl">
+        {filteredTasks.map((task, index) => (
+          <div key={index} className="flex items-center" onClick={() => handleTaskClick(index)}>
+            <div className="w-[72px] flex justify-center">
+              <div className="w-10 h-10">
+                {task.icon ? (
+                  <img
+                    src={task.icon}
+                    alt={task.title}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain rounded-full"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-gray-500 rounded-full" />
+                )}
+              </div>
+            </div>
+            <div
+              className={`flex items-center justify-between w-full py-4 pr-4 ${
+                index !== 0 && 'border-t border-[#222622]'
+              }`}
+            >
+              <div>
+                <div className="text-[17px]">{task.title}</div>
+                <div className="text-gray-400 text-[14px]">{task.price} TonCoin</div>
+              </div>
+              {/* Circle to show reward */}
+              <div
+                className={`w-10 h-10 border-2 ${
+                  activeTaskIndex === index ? 'bg-green-500' : 'border-green-500'
+                } rounded-full flex items-center justify-center`}
+              >
+                <div className={`${activeTaskIndex === index ? 'hidden' : 'text-gray-400 text-[12px]'}`}>
+                  {task.reward}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Button Section */}
+      <div className="mt-3 flex justify-center">
+        <button
+          onClick={handleTransaction}
+          className={`w-full max-w-xs border-2 border-transparent rounded-lg py-3 px-4 font-semibold text-lg ${
+            activeTaskIndex !== null
+              ? 'bg-blue-500 text-white'
+              : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
+          }`}
+        >
+          {loading ? 'Loading...' : 'Generate Transaction'}
+        </button>
       </div>
     </div>
   );
 };
 
-export default FriendsTab;
+export default TasksTab;
