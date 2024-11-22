@@ -42,10 +42,10 @@ const FriendsTab = () => {
           const data = await client.send(command);
           const items = data.Items || [];
 
-          // Extract the friends list from the `friends` field
-          const friendsList = items.length > 0
-            ? items[0].friends?.L?.map((friend) => friend.S) || []
-            : [];
+          const friendsList = items.length > 0 && items[0].friends && Array.isArray(items[0].friends.L)
+  ? items[0].friends.L.map((friend) => (friend && friend.S ? friend.S : ""))
+  : [];
+
           setFriends(friendsList); // Update state with the friends list
         }
       } catch (error) {
