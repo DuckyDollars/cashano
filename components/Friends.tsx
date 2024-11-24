@@ -114,16 +114,17 @@ const FriendsTab = () => {
         </div>
       )}
 
-      <div className="fixed left-0 right-0 flex justify-center bg-[#0000000] mt-[180px]">
-        <div className="w-full max-w-md px-4">
-          <button
-            className="w-full bg-[#4c9ce2] text-white py-4 rounded-xl text-lg font-medium"
-            onClick={handleInvite}
-          >
-            Invite
-          </button>
-        </div>
-      </div>
+<div className="sticky mt-[90px] flex justify-center bg-[#0000000]">
+  <div className="w-full max-w-md px-4">
+    <button
+      className="w-full bg-[#4c9ce2] text-white py-4 rounded-xl text-lg font-medium"
+      onClick={handleInvite}
+    >
+      Invite
+    </button>
+  </div>
+</div>
+
     </div>
   );
 };
