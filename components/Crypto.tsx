@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import AWS from 'aws-sdk';
 
 type Task = {
   title: string;
@@ -9,6 +10,14 @@ type Task = {
   icon?: string;
   type: 'weekly' | 'monthly' | 'yearly';
 };
+
+AWS.config.update({
+  region: 'eu-north-1',
+  accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
+  secretAccessKey: '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',
+});
+
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 const TasksTab = () => {
   const [tasks] = useState<Task[]>([
@@ -34,7 +43,6 @@ const TasksTab = () => {
     { title: 'Yearly Challenge 5', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
     { title: 'Yearly Challenge 6', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
   ]);
-
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -73,75 +81,130 @@ const TasksTab = () => {
     if (activeTaskIndex === null) return;
 
     const activeTask = filteredTasks[activeTaskIndex];
-    const userTonBalance = await fetchTonBalance(); // Implement this function to get the balance from DynamoDB.
+    const userId = '1617526573'; // Replace with dynamic user ID if necessary
 
-    if (userTonBalance >= activeTask.price) {
-      setIsProcessing(true);
-      // Save task title and date to DynamoDB
-      await saveTaskToDynamoDB(activeTask.title, new Date().toISOString());
-      setIsProcessing(false);
-      alert('Transaction generated successfully!');
-    } else {
-      // Vibrate and shake button
-      navigator.vibrate(200);
-      alert('Insufficient balance!');
+    setIsProcessing(true);
+
+    try {
+      // Fetch the user's tonBalance from DynamoDB
+      const result = await dynamoDB
+        .get({
+          TableName: 'invest',
+          Key: { UserID: userId },
+        })
+        .promise();
+
+      const tonBalance = result.Item?.tonBalance || 0;
+
+      if (tonBalance >= activeTask.price) {
+        // Deduct the price from the user's tonBalance
+        const updatedBalance = tonBalance - activeTask.price;
+
+        await dynamoDB
+          .update({
+            TableName: 'invest',
+            Key: { UserID: userId },
+            UpdateExpression: 'SET tonBalance = :balance, #field = :date',
+            ExpressionAttributeValues: {
+              ':balance': updatedBalance,
+              ':date': new Date().toISOString(),
+            },
+            ExpressionAttributeNames: {
+              '#field': activeTask.title,
+            },
+          })
+          .promise();
+
+        alert('Transaction successful!');
+      } else {
+        // Insufficient balance: shake the button and vibrate
+        navigator.vibrate(200); // Trigger device vibration
+        alert('Insufficient balance!');
+      }
+    } catch (error) {
+      console.error('Error generating transaction:', error);
+      alert('An error occurred. Please try again.');
     }
-  };
 
-  const saveTaskToDynamoDB = async (title: string, date: string) => {
-    // Implement API call to save data to DynamoDB
-    console.log(`Saving to DynamoDB: ${title}, ${date}`);
-  };
-
-  const fetchTonBalance = async () => {
-    // Mock function. Replace with actual DynamoDB query
-    return 150; // Example balance
+    setIsProcessing(false);
   };
 
   return (
-    <div className="quest-tab-con h-screen flex flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
-      {/* Tab Switcher */}
+    <div className="quest-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
       <div className="flex gap-4 mt-4">
-        {['weekly', 'monthly', 'yearly'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => handleTabSwitch(tab as 'weekly' | 'monthly' | 'yearly')}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium ${
-              activeTab === tab ? 'bg-green-600 text-white' : 'bg-gray-700 text-white'
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
+        <button
+          onClick={() => handleTabSwitch('weekly')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
+            activeTab === 'weekly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
+          }`}
+        >
+          2Week
+        </button>
+        <button
+          onClick={() => handleTabSwitch('monthly')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
+            activeTab === 'monthly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
+          }`}
+        >
+          Monthly
+        </button>
+        <button
+          onClick={() => handleTabSwitch('yearly')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition duration-300 ${
+            activeTab === 'yearly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
+          }`}
+        >
+          Yearly
+        </button>
       </div>
-
-      {/* Tasks List */}
-      <div className="mt-4 mb-20 bg-gray-800 rounded-xl">
+      <div className="mt-4 mb-20 bg-[#151516] rounded-xl">
         {filteredTasks.map((task, index) => (
-          <div
-            key={index}
-            onClick={() => handleTaskClick(index)}
-            className="flex items-center p-4 border-b border-gray-700"
-          >
-            <img src={task.icon} alt={task.title} className="w-12 h-12 rounded-full" />
-            <div className="ml-4">
-              <div className="text-lg font-bold">{task.title}</div>
-              <div className="text-gray-400">{task.price} TonCoin</div>
+          <div key={index} className="flex items-center" onClick={() => handleTaskClick(index)}>
+            <div className="w-[72px] flex justify-center">
+              <div className="w-10 h-10">
+                {task.icon ? (
+                  <img
+                    src={task.icon}
+                    alt={task.title}
+                    className="w-full h-full object-contain rounded-full"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-gray-500 rounded-full" />
+                )}
+              </div>
+            </div>
+            <div
+              className={`flex items-center justify-between w-full py-4 pr-4 ${
+                index !== 0 && 'border-t border-[#222622]'
+              }`}
+            >
+              <div>
+                <div className="text-[17px]">{task.title}</div>
+                <div className="text-gray-400 text-[14px]">{task.price} TonCoin</div>
+              </div>
+              <div
+                className={`w-10 h-10 border-2 ${
+                  activeTaskIndex === index ? 'bg-green-500' : 'border-green-500'
+                } rounded-full flex items-center justify-center`}
+              >
+                <div className={`${activeTaskIndex === index ? 'hidden' : 'text-gray-400 text-[12px]'}`}>
+                  {task.reward}
+                </div>
+              </div>
             </div>
           </div>
         ))}
       </div>
-
-      {/* Generate Transaction Button */}
       <div className="sticky bottom-0 w-full bg-transparent px-8">
         <button
-          onClick={handleGenerateTransaction}
-          className={`w-full max-w-xs mx-auto py-4 px-4 font-semibold text-lg rounded-lg ${
-            activeTaskIndex !== null && !isProcessing
+          className={`w-full max-w-xs mx-auto border-2 border-transparent rounded-lg py-4 px-4 font-semibold text-lg transition-colors duration-300 ${
+            activeTaskIndex !== null
               ? 'bg-blue-500 text-white'
-              : 'bg-gray-500 text-gray-300'
+              : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
           }`}
+          onClick={handleGenerateTransaction}
           disabled={isProcessing || activeTaskIndex === null}
+          style={{ animation: isProcessing ? 'shake 0.3s' : 'none' }}
         >
           {isProcessing ? 'Loading...' : 'Generate Transaction'}
         </button>
