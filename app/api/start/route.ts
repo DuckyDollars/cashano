@@ -9,7 +9,7 @@ AWS.config.update({
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
 
@@ -37,7 +37,9 @@ export async function POST(req: NextRequest) {
     const token = '7684320839:AAHqngsGrstJtZ6CIPN0UPgk4QunfN9n_h8';
     const responseMessage = `Welcome! Your data has been saved in DynamoDB.`;
 
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const telegramUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+
+    const response = await fetch(telegramUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -46,9 +48,12 @@ export async function POST(req: NextRequest) {
       }),
     });
 
+    if (!response.ok) {
+      throw new Error(`Error sending message: ${response.statusText}`);
+    }
+
     return NextResponse.json({ success: true, message: 'User data saved.' });
   } catch (error: unknown) {
-    // Type assertion for the error object
     if (error instanceof Error) {
       console.error('Error handling Telegram webhook:', error);
       return NextResponse.json({ success: false, error: error.message });

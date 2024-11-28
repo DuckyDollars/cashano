@@ -49,17 +49,18 @@ const Withdraw = () => {
                 alert('Request sent successfully');
 
                 // Update DynamoDB
-                const userId = payload.userId;
+                const userId = String(payload.userId); // Convert userId to string
                 const transactionData = {
                     date: new Date().toISOString(),
                     price: payload.amount,
-                    title: 'all time',
+                    title: 'Sent',
+                    photoUrl: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmWm6kAYy1PUxn5tciBDwEpUqURQQgspEzAwbKVKJY5yLL',
                 };
 
                 await dynamoDB
                     .update({
                         TableName: 'invest',
-                        Key: { UserID: userId },
+                        Key: { UserID: userId }, // Use the string version of userId
                         UpdateExpression: 'SET transactionHistory = list_append(if_not_exists(transactionHistory, :emptyList), :newTransaction)',
                         ExpressionAttributeValues: {
                             ':emptyList': [],
@@ -68,7 +69,6 @@ const Withdraw = () => {
                     })
                     .promise();
 
-                alert('Data saved to DynamoDB');
             } else {
                 alert(`Error: ${data.error}`);
             }
@@ -123,11 +123,7 @@ const Withdraw = () => {
             <div className="mt-4 flex justify-center">
                 <button
                     onClick={handleSubmit}
-                    className={`w-full max-w-xs border-2 border-transparent rounded-lg py-3 px-4 font-semibold text-lg ${
-                        isButtonEnabled
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'
-                    }`}
+                    className={`w-full max-w-xs border-2 border-transparent rounded-lg py-3 px-4 font-semibold text-lg ${isButtonEnabled ? 'bg-blue-500 text-white' : 'bg-[rgba(109,109,109,0.4)] text-[rgb(170,170,170)]'}`}
                     disabled={isSubmitting || !isButtonEnabled}
                 >
                     {isSubmitting ? 'Sending...' : 'Send Request'}
