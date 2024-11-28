@@ -47,8 +47,14 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, message: 'User data saved.' });
-  } catch (error) {
-    console.error('Error handling Telegram webhook:', error);
-    return NextResponse.json({ success: false, error: error.message });
+  } catch (error: unknown) {
+    // Type assertion for the error object
+    if (error instanceof Error) {
+      console.error('Error handling Telegram webhook:', error);
+      return NextResponse.json({ success: false, error: error.message });
+    } else {
+      console.error('Unknown error:', error);
+      return NextResponse.json({ success: false, error: 'An unknown error occurred' });
+    }
   }
 }
