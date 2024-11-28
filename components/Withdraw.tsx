@@ -1,6 +1,6 @@
 'use client' 
 
-import { diamond } from '@/images'
+import { TonCoin } from '@/images'
 import Image from 'next/image'
 
 const FriendsTab = () => {
@@ -11,25 +11,19 @@ const FriendsTab = () => {
                 {/* Left Icon with Text */}
                 <div className="flex items-center space-x-2">
                     <Image
-                        src={diamond}
+                        src={TonCoin}
                         alt=""
                         width={32}
                         height={32}
                         className='rounded-full'
                     />
-                    <span className="text-white font-semibold">Diamond</span>
+                    <span className="text-white font-semibold">TonCoin</span>
                 </div>
 
                 {/* Right Text */}
-                <span className="text-white font-semibold">Investment</span>
+                <span className="text-white font-semibold">Withdraw</span>
             </div>
 
-            <div className="mt-3">
-                <p className="text-white font-semibold">Your wallet</p>
-                <div className="w-full border-2 border-white rounded-lg mt-2 p-2">
-                    <p className="text-white text-sm">nfwuj848...jdwndj8477</p>
-                </div>
-            </div>
             <div className="mt-3">
                 <p className="text-white font-semibold">Amount</p>
                 <div className="w-full border-2 border-white rounded-lg mt-2 p-2">
