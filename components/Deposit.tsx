@@ -47,10 +47,11 @@ function Deposit() {
       return; // Early return to stop the transaction process
     }
 
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       console.error("Invalid amount");
       return; // Early return if amount is invalid
     }
+    
 
     const transaction = {
       validUntil: Date.now() + 5 * 60 * 1000, // 5 minutes
