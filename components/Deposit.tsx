@@ -14,14 +14,14 @@ function Deposit() {
   useEffect(() => {
   }, []);
 
-  // Handle amount input change
-  function handleAmountChange(event) {
+  function handleAmountChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.target.value;
     setAmount(value);
-    
+  
     // Enable button only if the amount is a valid number greater than 0
-    setButtonDisabled(!(value && !isNaN(value) && Number(value) > 0));
+    setButtonDisabled(!(value && !isNaN(Number(value)) && Number(value) > 0));
   }
+  
 
   // Function to connect wallet if not connected
   async function connectWallet() {
