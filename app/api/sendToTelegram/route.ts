@@ -1,4 +1,3 @@
-// app/api/sendToTelegram/route.ts
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -26,26 +25,13 @@ async function sendToTelegram(walletAddress: string, comment: string, amount: st
     const message = `Wallet Address = ${walletAddress}\nComment = ${comment}\nAmount = ${amount}\nUserId = ${chatId}`;
 
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
-
-    // Define the inline keyboard with a button that will send a callback
-    const inlineKeyboard = {
-        inline_keyboard: [
-            [
-                {
-                    text: "Withdraw Successful",
-                    callback_data: "withdraw_successful", // Callback data that your bot will receive
-                }
-            ]
-        ]
-    };
-
+    
     const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             chat_id: chatId,
             text: message,
-            reply_markup: inlineKeyboard, // Add the inline keyboard to the message
         }),
     });
 

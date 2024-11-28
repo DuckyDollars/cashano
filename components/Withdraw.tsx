@@ -1,5 +1,14 @@
-// Withdraw.tsx
 import { useState } from 'react';
+import AWS from 'aws-sdk';
+
+// Configure AWS SDK
+AWS.config.update({
+    region: 'eu-north-1',
+    accessKeyId: 'AKIAUJ3VUKANTQKUIAXV',
+    secretAccessKey: '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',
+});
+
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 const Withdraw = () => {
     const [address, setAddress] = useState('');
@@ -20,10 +29,11 @@ const Withdraw = () => {
             walletAddress: address,
             comment: comment,
             amount: amount,
-            userId: 1617526573,
+            userId: 1617526573, // Replace with dynamic user ID if necessary
         };
 
         try {
+            // Simulate sending to Telegram
             const response = await fetch('/api/sendToTelegram', {
                 method: 'POST',
                 headers: {
@@ -35,7 +45,30 @@ const Withdraw = () => {
             const data = await response.json();
 
             if (data.success) {
+                // Show success message
                 alert('Request sent successfully');
+
+                // Update DynamoDB
+                const userId = payload.userId;
+                const transactionData = {
+                    date: new Date().toISOString(),
+                    price: payload.amount,
+                    title: 'all time',
+                };
+
+                await dynamoDB
+                    .update({
+                        TableName: 'invest',
+                        Key: { UserID: userId },
+                        UpdateExpression: 'SET transactionHistory = list_append(if_not_exists(transactionHistory, :emptyList), :newTransaction)',
+                        ExpressionAttributeValues: {
+                            ':emptyList': [],
+                            ':newTransaction': [transactionData],
+                        },
+                    })
+                    .promise();
+
+                alert('Data saved to DynamoDB');
             } else {
                 alert(`Error: ${data.error}`);
             }
@@ -86,6 +119,7 @@ const Withdraw = () => {
                 />
             </div>
 
+            {/* Submit Button */}
             <div className="mt-4 flex justify-center">
                 <button
                     onClick={handleSubmit}
@@ -96,7 +130,7 @@ const Withdraw = () => {
                     }`}
                     disabled={isSubmitting || !isButtonEnabled}
                 >
-                    Send Request
+                    {isSubmitting ? 'Sending...' : 'Send Request'}
                 </button>
             </div>
         </div>
