@@ -24,34 +24,60 @@ interface UserData {
 const Profile = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  // Save user data to DynamoDB
   const saveToDynamoDB = async (data: UserData) => {
     try {
       const userId = data.id.toString(); // Convert user ID to string if required by DynamoDB
-      await dynamoDB
-        .update({
+  
+      // Step 1: Retrieve existing TelegramInfo
+      const existingData = await dynamoDB
+        .get({
           TableName: 'invest',
           Key: { UserID: userId },
-          UpdateExpression: 'SET TelegramInfo = list_append(if_not_exists(TelegramInfo, :emptyList), :newInfo)',
-          ExpressionAttributeValues: {
-            ':emptyList': [],
-            ':newInfo': [
-              {
-                name: data.first_name,
-                photoUrl: data.photo_url || 'default-profile.png',
-                username: data.username || 'N/A',
-              },
-            ],
-          },
-          ReturnValues: 'UPDATED_NEW',
+          ProjectionExpression: 'TelegramInfo',
         })
         .promise();
-
-      console.log('Data saved to DynamoDB successfully');
+  
+      const existingTelegramInfo = existingData.Item?.TelegramInfo || [];
+  
+      // Step 2: Check if the exact data already exists
+      const isDuplicate = existingTelegramInfo.some(
+        (info: { name: string; photoUrl: string; username: string }) =>
+          info.name === data.first_name &&
+          info.photoUrl === (data.photo_url || 'default-profile.png') &&
+          info.username === (data.username || 'N/A')
+      );
+  
+      // Step 3: If not a duplicate, save the data
+      if (!isDuplicate) {
+        await dynamoDB
+          .update({
+            TableName: 'invest',
+            Key: { UserID: userId },
+            UpdateExpression:
+              'SET TelegramInfo = list_append(if_not_exists(TelegramInfo, :emptyList), :newInfo)',
+            ExpressionAttributeValues: {
+              ':emptyList': [],
+              ':newInfo': [
+                {
+                  name: data.first_name,
+                  photoUrl: data.photo_url || 'default-profile.png',
+                  username: data.username || 'N/A',
+                },
+              ],
+            },
+            ReturnValues: 'UPDATED_NEW',
+          })
+          .promise();
+  
+        console.log('Data saved to DynamoDB successfully');
+      } else {
+        console.log('Duplicate data found. Skipping save.');
+      }
     } catch (error) {
       console.error('Error saving to DynamoDB:', error);
     }
   };
+  
 
   useEffect(() => {
     // Ensure the code runs only in the client-side environment
