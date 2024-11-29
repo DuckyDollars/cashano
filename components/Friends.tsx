@@ -132,7 +132,7 @@ const FriendsTab = () => {
         </button>
       </div>
 
-      <div className="mt-10 bg-[#151516] rounded-xl">
+      <div className="mt-10 bg-gradient-to-t from-green-500 to-teal-500 rounded-xl">
         {loading ? (
           <div className="flex justify-center items-center h-[200px]">
             <div className="spinner-border animate-spin inline-block w-12 h-12 border-4 rounded-full border-t-transparent border-[#f3f3f3] border-solid"></div>
