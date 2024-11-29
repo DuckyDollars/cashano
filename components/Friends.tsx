@@ -123,7 +123,7 @@ const FriendsTab = () => {
       </div>
 
       {/* Buttons section above friends list */}
-      <div className="flex mt-5 space-x-2">
+      <div className="flex mt-5 space-x-2 bg-gradient-to-t from-green-500 to-teal-500">
         <button onClick={handleInvite} className="w-[80%] shine-effect border-[2px] border-[#2d2d2e] rounded-lg bg-[green] text-white py-2 rounded-md flex justify-center items-center">
           Invite
         </button>
@@ -132,7 +132,7 @@ const FriendsTab = () => {
         </button>
       </div>
 
-      <div className="mt-10 bg-gradient-to-t from-green-500 to-teal-500 rounded-xl">
+      <div className="mt-10 bg-[#151516] rounded-xl">
         {loading ? (
           <div className="flex justify-center items-center h-[200px]">
             <div className="spinner-border animate-spin inline-block w-12 h-12 border-4 rounded-full border-t-transparent border-[#f3f3f3] border-solid"></div>
