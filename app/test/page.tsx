@@ -1,4 +1,4 @@
-import TabContainer from '@/components/History'
+import TabContainer from '@/components/invite'
 import NavigationBar from '@/components/NavigationBar'
 
 export default function Home() {

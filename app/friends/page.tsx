@@ -1,28 +1,11 @@
-'use client'
-
-import ReferralSystem from '@/components/ReferralSystem'
-import { useEffect, useState } from 'react'
+import TabContainer from '@/components/Friends'
+import NavigationBar from '@/components/NavigationBar'
 
 export default function Home() {
-  const [initData, setInitData] = useState('')
-  const [userId, setUserId] = useState('')
-  const [startParam, setStartParam] = useState('')
-
-  useEffect(() => {
-    const initWebApp = async () => {
-      if (typeof window !== 'undefined') {
-        const WebApp = (await import('@twa-dev/sdk')).default;
-        WebApp.ready();
-        setInitData(WebApp.initData);
-        setUserId(WebApp.initDataUnsafe.user?.id.toString() || '');
-        setStartParam(WebApp.initDataUnsafe.start_param || '');
-      }
-    };
-
-    initWebApp();
-  }, [])
-
   return (
-      <ReferralSystem initData={initData} userId={userId} startParam={startParam} />
+      <main className="min-h-screen bg-black text-white">
+        <TabContainer />
+        <NavigationBar />
+      </main>
   )
 }
