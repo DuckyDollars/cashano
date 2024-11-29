@@ -24,8 +24,6 @@ const TasksTab = () => {
     { title: 'Weekly Challenge 1', price: 100, reward: '+10%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
     { title: 'Weekly Challenge 2', price: 200, reward: '+20%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
     { title: 'Weekly Challenge 3', price: 100, reward: '+10%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
-    { title: 'Weekly Challenge 4', price: 200, reward: '+20%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
-    { title: 'Weekly Challenge 5', price: 100, reward: '+10%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
 
 
     { title: 'Monthly Challenge 1', price: 300, reward: '+30%', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
@@ -44,6 +42,21 @@ const TasksTab = () => {
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchasedTasks, setPurchasedTasks] = useState<{ [key: string]: boolean }>({});
+
+  const formatDate = (date: Date | string | number): string => {
+    // Ensure date is a Date object
+    const validDate = new Date(date);
+    
+    // Check if the Date is invalid
+    if (isNaN(validDate.getTime())) {
+        throw new Error('Invalid date');
+    }
+
+    const year = validDate.getFullYear();
+    const month = String(validDate.getMonth() + 1).padStart(2, '0'); // Ensure two-digit month
+    const day = String(validDate.getDate()).padStart(2, '0'); // Ensure two-digit day
+    return `${year}/${month}/${day}`;
+};
 
   useEffect(() => {
     const fetchPurchasedTasks = async () => {
@@ -117,10 +130,12 @@ const TasksTab = () => {
   
         // Create a new transaction record
         const transaction = {
-          date: new Date().toISOString(),
+          date: formatDate(new Date()), // Using the formatted date
           price: activeTask.price,
           title: activeTask.title,
+          photoUrl: "https://brown-just-donkey-162.mypinata.cloud/ipfs/QmfFXvEm29S9WjqGZfKSRQzLKALpejN3ZuPQh149AZAdvr",
         };
+        
   
         // Update the balance and transaction history in DynamoDB
         await dynamoDB
@@ -175,7 +190,7 @@ const TasksTab = () => {
             activeTab === 'weekly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
           }`}
         >
-          Weekly
+          Biweekly
         </button>
         <button
           onClick={() => handleTabSwitch('monthly')}
@@ -191,7 +206,7 @@ const TasksTab = () => {
             activeTab === 'yearly' ? 'bg-[green] text-white' : 'bg-[#151515] text-white'
           }`}
         >
-          Yearly
+          Annually
         </button>
       </div>
       <div className="mt-4 mb-20 bg-[#151516] rounded-xl">

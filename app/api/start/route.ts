@@ -54,9 +54,9 @@ export async function POST(req: NextRequest) {
       TableName: 'invest',
       Item: {
         UserID: telegramId.toString(),
-        Name: name,
         TelegramInfo: [
           {
+            Name: name || null,
             Username: username || null,
             PhotoUrl: photoUrl || null,
           },

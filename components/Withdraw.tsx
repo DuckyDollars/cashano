@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import AWS from 'aws-sdk';
+import { TonCoin } from '../images';
+import Image from 'next/image';
 
 // Configure AWS SDK
 AWS.config.update({
@@ -17,6 +19,23 @@ const Withdraw = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const isButtonEnabled = address.trim() !== '' && Number(amount) >= 3;
+
+    const formatDate = (date: Date | string | number): string => {
+        // Ensure date is a Date object
+        const validDate = new Date(date);
+        
+        // Check if the Date is invalid
+        if (isNaN(validDate.getTime())) {
+            throw new Error('Invalid date');
+        }
+    
+        const year = validDate.getFullYear();
+        const month = String(validDate.getMonth() + 1).padStart(2, '0'); // Ensure two-digit month
+        const day = String(validDate.getDate()).padStart(2, '0'); // Ensure two-digit day
+        return `${year}/${month}/${day}`;
+    };
+    
+    
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,10 +70,10 @@ const Withdraw = () => {
                 // Update DynamoDB
                 const userId = String(payload.userId); // Convert userId to string
                 const transactionData = {
-                    date: new Date().toISOString(),
+                    date: formatDate(new Date()),  // Use the formatted date
                     price: payload.amount,
                     title: 'Sent',
-                    photoUrl: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmWm6kAYy1PUxn5tciBDwEpUqURQQgspEzAwbKVKJY5yLL',
+                    photoUrl: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmP43PA88CS4sFrx13yv13gBtTJGka4NS9fuYWj4hVjvUN',
                 };
 
                 await dynamoDB
@@ -82,6 +101,25 @@ const Withdraw = () => {
 
     return (
         <div className="friends-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
+
+            {/* Header Section */}
+      <div className="flex justify-between items-center pt-4 w-full px-2">
+        {/* Left Icon with Text */}
+        <div className="flex items-center space-x-2">
+          <Image
+            src={TonCoin}
+            alt="TonCoin"
+            width={32}
+            height={32}
+            className="rounded-full"
+          />
+          <span className="text-white font-semibold">TonCoin</span>
+        </div>
+
+        {/* Right Text */}
+        <span className="text-white font-semibold">Withdraw</span>
+      </div>
+
             {/* Wallet Address Input */}
             <div className="mt-3">
                 <p className="text-white font-semibold">Your Wallet</p>

@@ -6,6 +6,7 @@ import { TonCoin } from '@/images';
 import Wallet from '@/icons/Wallet';
 import Invest from '@/icons/InvetLogo';
 import ArrowRight from '@/icons/ArrowRight';
+import TasksTab from './History'; // Import the TasksTab component
 
 const HomeTab = () => {
   return (
@@ -24,7 +25,7 @@ const HomeTab = () => {
                   className="w-10 h-10 mx-auto"
                 />
               </div>
-              <div className="text-2xl font-bold">$145</div>
+              <div className="text-2xl font-bold">145TON</div>
             </div>
 
             <div className="bg-white p-2">
@@ -43,11 +44,11 @@ const HomeTab = () => {
                   className="w-10 h-10 mx-auto"
                 />
               </div>
-              <div className="text-2xl font-bold">$9.94</div>
+              <div className="text-2xl font-bold">9.94TON</div>
             </div>
 
             <div className="bg-black p-2">
-              <div className="mt-0 text-lg font-semibold text-white">In Invest</div>
+              <div className="mt-0 text-lg font-semibold text-white">InCome</div>
             </div>
           </div>
         </div>
@@ -80,30 +81,10 @@ const HomeTab = () => {
 
       {/* New Section with Black Background for Recent Transactions */}
       <div className="w-full bg-gradient-to-b from-green-500 to-teal-500 text-white p-4">
-        <div className="text-xl font-semibold mb-4">Recent Transactions</div>
-        {/* Add transaction details here */}
-        <div className="space-y-2">
-          <div className="p-4 bg-[green] border-[2px] border-[#2d2d2e] rounded-lg">
-            <div className="flex justify-between">
-              <div className="text-sm">Investment</div>
-              <div className="text-sm">$50</div>
-            </div>
-          </div>
-          <div className="p-4 bg-[green] border-[2px] border-[#2d2d2e] rounded-lg">
-            <div className="flex justify-between">
-              <div className="text-sm">Deposit</div>
-              <div className="text-sm">$200</div>
-            </div>
-          </div>
-          <div className="p-4 bg-[green] border-[2px] border-[#2d2d2e] rounded-lg">
-            <div className="flex justify-between">
-              <div className="text-sm">Withdraw</div>
-              <div className="text-sm">$200</div>
-            </div>
-          </div>
-        </div>
+        <div className="text-xl font-semibold">Recent Transactions</div>
+        {/* You can add recent transactions content here */}
       </div>
-
+      <TasksTab />
     </div>
   );
 };
