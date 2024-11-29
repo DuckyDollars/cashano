@@ -155,7 +155,7 @@ const FriendsTab = () => {
           </div>
         ) : (
           friends.map((friend, index) => (
-            <div key={index} className="flex items-center justify-between py-4 pr-4 border-t border-[#222622]">
+            <div key={index} className="flex items-center justify-between bg-gradient-to-t from-green-500 to-teal-500 py-4 pr-4 border-t border-[#222622]">
               <div className="w-[72px] flex justify-center">
                 <div className="w-10 h-10">
                   <img
