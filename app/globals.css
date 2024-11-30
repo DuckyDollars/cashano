@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: linear-gradient(to top, #48bb78, #14b8a6);
+  --foreground: linear-gradient(to top, #48bb78, #14b8a6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: linear-gradient(to top, #48bb78, #14b8a6);
+    --foreground: linear-gradient(to top, #48bb78, #14b8a6);
+  }
+}
+
 @font-face {
   font-family: 'SF Pro';
   src: url('/fonts/SF-Pro-Display-Regular.otf') format('opentype');
