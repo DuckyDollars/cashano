@@ -5,12 +5,14 @@
 :root {
   --background: linear-gradient(to top, #48bb78, #14b8a6);
   --foreground: linear-gradient(to top, #48bb78, #14b8a6);
+  background: linear-gradient(to top, #48bb78, #14b8a6);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: linear-gradient(to top, #48bb78, #14b8a6);
     --foreground: linear-gradient(to top, #48bb78, #14b8a6);
+    background: linear-gradient(to top, #48bb78, #14b8a6);
   }
 }
 
@@ -54,15 +56,11 @@
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
-  --background: linear-gradient(to top, #48bb78, #14b8a6);
-  --foreground: linear-gradient(to top, #48bb78, #14b8a6);
 }
 
 /* Smooth scrolling for iOS */
 body {
   -webkit-overflow-scrolling: touch;
-  --background: linear-gradient(to top, #48bb78, #14b8a6);
-  --foreground: linear-gradient(to top, #48bb78, #14b8a6);
 }
 
 .is-hide {

@@ -16,7 +16,6 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "CashCraze",
-  description: "Simple app for minting Soulbound Tokens on The Open Network",
 };
 
 export default function RootLayout({
