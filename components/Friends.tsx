@@ -107,7 +107,7 @@ const FriendsTab = () => {
   }, [userId]); // Re-run when userId changes
 
   return (
-    <div className="friends-tab-con px-4 h-[100%] transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
+    <div className="friends-tab-con px-4 h-screen transition-all duration-300 bg-gradient-to-b from-green-500 to-teal-500">
       <div className="pt-5 space-y-1">
         <h1 className="text-3xl font-bold">INVITE FRIENDS</h1>
         <div className="text-xl">

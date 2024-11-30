@@ -18,7 +18,7 @@ const NavigationBar = () => {
     ]
 
     return (
-        <div className="flex justify-center w-full">
+        <div className="flex justify-center w-full bg-gradient-to-t from-green-500 to-teal-500">
             <div className="fixed bottom-0 bg-white border-t border-gray-800 w-full max-w-md">
                 <div className="flex justify-between px-4 py-2">
                     {tabs.map((tab) => {
