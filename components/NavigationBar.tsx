@@ -19,18 +19,18 @@ const NavigationBar = () => {
 
     return (
         <div className="flex justify-center w-full bg-gradient-to-t from-green-500 to-teal-500">
-            <div className="fixed bottom-0 bg-white border-t border-gray-800 w-full max-w-md">
-                <div className="flex justify-between px-4 py-2">
+            <div className="fixed bottom-0 bg-white border-t border-gray-800 w-full max-w-md cursor-pointer select-none">
+                <div className="flex justify-between px-4 py-2 cursor-pointer select-none">
                     {tabs.map((tab) => {
                         const isActive = pathname === tab.href // Check if the current path matches the tab href
                         return (
-                            <Link key={tab.id} href={tab.href}>
-                                <button className="flex flex-col items-center">
+                            <Link className="cursor-pointer select-none" key={tab.id} href={tab.href}>
+                                <button className=" cursor-pointer select-none flex flex-col items-center">
                                     <tab.Icon
-                                        className={`w-10 h-10 ${isActive ? 'text-green-500' : 'text-black'}`}
+                                        className={`cursor-pointer select-none w-10 h-10 ${isActive ? 'text-green-500' : 'text-black'}`}
                                     />
                                     <span
-                                        className={`text-xs font-medium ${isActive ? 'text-green-500' : 'text-black'}`}
+                                        className={`cursor-pointer select-none text-xs font-medium ${isActive ? 'text-green-500' : 'text-black'}`}
                                     >
                                         {tab.label}
                                     </span>
