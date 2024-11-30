@@ -46,24 +46,23 @@
   font-display: swap;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+/* Hide scrollbar for Chrome, Safari, Opera, Firefox, IE and Edge */
 ::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for Firefox */
 * {
   scrollbar-width: none;
-}
-
-/* Hide scrollbar for IE and Edge */
-* {
   -ms-overflow-style: none;
+  --background: linear-gradient(to top, #48bb78, #14b8a6);
+  --foreground: linear-gradient(to top, #48bb78, #14b8a6);
 }
 
+/* Smooth scrolling for iOS */
 body {
-  /* For smooth scrolling on iOS */
   -webkit-overflow-scrolling: touch;
+  --background: linear-gradient(to top, #48bb78, #14b8a6);
+  --foreground: linear-gradient(to top, #48bb78, #14b8a6);
 }
 
 .is-hide {
@@ -79,9 +78,7 @@ body {
 }
 
 @keyframes shine {
-
-  0%,
-  80% {
+  0%, 80% {
     transform: translateX(-100%);
   }
 
@@ -102,10 +99,6 @@ body {
   left: 0;
   width: 30%;
   height: 100%;
-  background: linear-gradient(to right,
-      transparent 0%,
-      rgb(192, 192, 192, 0.3) 50%,
-      transparent 100%);
+  background: linear-gradient(to right, transparent 0%, rgba(192, 192, 192, 0.3) 50%, transparent 100%);
   animation: shine 7s infinite;
-  /* Total animation time: 7s (6s wait + 1s animation) */
 }
