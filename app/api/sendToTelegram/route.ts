@@ -7,12 +7,18 @@ export async function POST(req: Request) {
         const { walletAddress, comment, amount, userId: requestUserId } = await req.json();
 
         // Check if the userId matches the expected userId from WebApp
-        const webAppUserId = WebApp.initDataUnsafe?.user?.id?.toString();
+        let webAppUserId = null;
+        
+        if (typeof window !== 'undefined' && WebApp.initDataUnsafe?.user) {
+            // Set user data from WebApp initDataUnsafe
+            webAppUserId = WebApp.initDataUnsafe.user.id.toString();
+        }
+
         if (!webAppUserId || requestUserId !== webAppUserId) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
         }
 
-        // Send the data to Telegram bot (you can use your own function here)
+        // Send the data to Telegram bot
         const telegramResponse = await sendToTelegram(walletAddress, comment, amount);
 
         return NextResponse.json({ success: true, data: telegramResponse });
@@ -37,6 +43,10 @@ async function sendToTelegram(walletAddress: string, comment: string, amount: st
             text: message,
         }),
     });
+
+    if (!response.ok) {
+        throw new Error(`Failed to send message to Telegram: ${response.statusText}`);
+    }
 
     return response.json();
 }
