@@ -2,6 +2,7 @@ import Header from '@/components/Header'
 import TabContainer from '@/components/HomeTab'
 import TabContainer2 from '@/components/Referral'
 import TabContainer3 from '@/components/SaveData'
+import TabContainer4 from '@/components/InvestSystem'
 import NavigationBar from '@/components/NavigationBar'
 
 export default function Home() {
@@ -12,6 +13,7 @@ export default function Home() {
         <NavigationBar />
         <TabContainer2 />
         <TabContainer3 />
+        <TabContainer4 />
       </main>
   )
 }

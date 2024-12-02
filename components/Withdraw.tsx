@@ -66,8 +66,6 @@ const Withdraw = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Show success message
-                alert('Request sent successfully');
 
                 // Update DynamoDB
                 const userId = String(payload.userId); // Convert userId to string
@@ -91,11 +89,9 @@ const Withdraw = () => {
                     .promise();
 
             } else {
-                alert(`Error: ${data.error}`);
             }
         } catch (error) {
             console.error('Error sending data:', error);
-            alert('Something went wrong!');
         } finally {
             setIsSubmitting(false);
         }
@@ -158,6 +154,12 @@ const Withdraw = () => {
                     className="w-full border-2 border-white rounded-lg mt-2 p-2 text-white bg-transparent placeholder-white"
                 />
             </div>
+            <div className="mt-3">
+        <div className="w-full border-2 border-white rounded-lg mt-2 p-2 flex justify-between items-center">
+          <p className="text-white text-sm">Min Withdraw:</p>
+          <p className="text-white text-sm">3 TON</p>
+        </div>
+      </div>
 
             {/* Submit Button */}
             <div className="mt-4 flex justify-center">

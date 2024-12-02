@@ -40,7 +40,6 @@ const FriendsTab = () => {
     if (userId) {
       const inviteLink = `https://t.me/CashCraaze_bot/start?startapp=${userId}`;
       navigator.clipboard.writeText(inviteLink);
-      alert('Invite link copied to clipboard!');
     }
   };
 
@@ -176,7 +175,6 @@ const FriendsTab = () => {
           ))
         )}
       </div>
-      <div className='p-15 bg-transparent text-[1px]'>.</div>
     </div>
   );
 };

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AWS from 'aws-sdk';
+import Link from 'next/link';
 
 type Task = {
   title: string;
@@ -21,27 +22,30 @@ const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 const TasksTab = () => {
   const [tasks] = useState<Task[]>([
-    { title: 'Weekly Challenge 1', price: 100, reward: '+10%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
-    { title: 'Weekly Challenge 2', price: 200, reward: '+20%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
-    { title: 'Weekly Challenge 3', price: 100, reward: '+10%', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'W Starter Package', price: 73, reward: '4', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'W Growth Package', price: 220, reward: '6', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'W Balanced Package', price: 733, reward: '8', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'W Premium Package', price: 2201, reward: '10', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
+    { title: 'W Elite Package', price: 7356, reward: '12', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
 
 
-    { title: 'Monthly Challenge 1', price: 300, reward: '+30%', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
-    { title: 'Monthly Challenge 2', price: 300, reward: '+30%', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
-    { title: 'Monthly Challenge 3', price: 300, reward: '+30%', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
-    { title: 'Monthly Challenge 4', price: 300, reward: '+30%', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
-    { title: 'Monthly Challenge 5', price: 300, reward: '+30%', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
+    { title: 'M Starter Package', price: 73, reward: '10', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
+    { title: 'M Growth Package', price: 220, reward: '15', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
+    { title: 'M Balanced Package', price: 733, reward: '20', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
+    { title: 'M Premium Package', price: 2201, reward: '25', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
+    { title: 'M Elite Package', price: 7356, reward: '30', type: 'monthly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmPUtt4gNqNa7tVS5uNG5peaoxdGHiVC3uJKpokdg2djWY' },
 
-    { title: 'Yearly Challenge 1', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
-    { title: 'Yearly Challenge 2', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
-    { title: 'Yearly Challenge 3', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
-    { title: 'Yearly Challenge 4', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
-    { title: 'Yearly Challenge 5', price: 500, reward: '+50%', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
+    { title: 'A Starter Package', price: 73, reward: '25', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
+    { title: 'A Growth Package', price: 220, reward: '35', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
+    { title: 'A Balanced Package', price: 733, reward: '50', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
+    { title: 'A Premium Package', price: 2201, reward: '60', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
+    { title: 'A Elite Package', price: 7356, reward: '75', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
   ]);
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [purchasedTasks, setPurchasedTasks] = useState<{ [key: string]: boolean }>({});
+  const [purchasedTasks, setPurchasedTasks] = useState<{ [key: string]: string }>({});
+
 
   const formatDate = (date: Date | string | number): string => {
     // Ensure date is a Date object
@@ -114,7 +118,7 @@ const TasksTab = () => {
     setIsProcessing(true);
   
     try {
-      // Fetch the user's tonBalance and transaction history from DynamoDB
+      // Fetch the user's tonBalance, transactionHistory, and purchasedTasks from DynamoDB
       const result = await dynamoDB
         .get({
           TableName: 'invest',
@@ -123,7 +127,8 @@ const TasksTab = () => {
         .promise();
   
       const tonBalance = result.Item?.tonBalance || 0;
-      const transactionHistory = result.Item?.transactionHistory || []; // Retrieve the transaction history
+      const transactionHistory = result.Item?.transactionHistory || [];
+      const currentPurchasedTasks = result.Item?.purchasedTasks || {};
   
       if (tonBalance >= activeTask.price) {
         const updatedBalance = tonBalance - activeTask.price;
@@ -135,26 +140,29 @@ const TasksTab = () => {
           title: activeTask.title,
           photoUrl: "https://brown-just-donkey-162.mypinata.cloud/ipfs/QmfFXvEm29S9WjqGZfKSRQzLKALpejN3ZuPQh149AZAdvr",
         };
-        
   
-        // Update the balance and transaction history in DynamoDB
+        // Add a new record to purchasedTasks
+        const purchasedTaskEntry = {
+          date: formatDate(new Date()),
+          price: activeTask.price,
+          reward: activeTask.reward,
+          type: activeTask.type,
+        };
+  
+        // Update the balance, purchased tasks, and transaction history in DynamoDB
         await dynamoDB
           .update({
             TableName: 'invest',
             Key: { UserID: userId },
             UpdateExpression:
-              'SET tonBalance = :balance, #field = :date, purchasedTasks = :purchasedTasks, transactionHistory = :transactionHistory',
+              'SET tonBalance = :balance, purchasedTasks = :purchasedTasks, transactionHistory = :transactionHistory',
             ExpressionAttributeValues: {
               ':balance': updatedBalance,
-              ':date': new Date().toISOString(),
               ':purchasedTasks': {
-                ...purchasedTasks,
-                [activeTask.title]: true, // Mark task as purchased
+                ...currentPurchasedTasks,
+                [activeTask.title]: purchasedTaskEntry, // Save the task with its details
               },
               ':transactionHistory': [...transactionHistory, transaction], // Append new transaction to history
-            },
-            ExpressionAttributeNames: {
-              '#field': activeTask.title,
             },
           })
           .promise();
@@ -162,7 +170,7 @@ const TasksTab = () => {
         // Update local state to reflect the purchase
         setPurchasedTasks((prev) => ({
           ...prev,
-          [activeTask.title]: true,
+          [activeTask.title]: purchasedTaskEntry,
         }));
   
         // Show "Transaction Successful" for 2 seconds
@@ -178,6 +186,9 @@ const TasksTab = () => {
   
     setIsProcessing(false);
   };
+  
+  
+  
   
   
 
@@ -236,7 +247,7 @@ const TasksTab = () => {
     >
       <div>
         <div className="text-[17px]">{task.title}</div>
-        <div className="text-gray-400 text-[14px]">{task.price} TonCoin</div>
+        <div className="text-gray-400 text-[14px]">{task.price} TonCoin +{task.reward}%</div>
       </div>
       {!purchasedTasks[task.title] && (
         <button
@@ -253,6 +264,11 @@ const TasksTab = () => {
   </div>
 ))}
       </div>
+      <Link href={'/about'}
+      className="mt-2 w-full py-3 bg-blue-500 text-white rounded-lg text-center font-semibold"
+    >
+      About Package
+    </Link>
     </div>
   );
 };
