@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AWS from 'aws-sdk';
+import WebApp from '@twa-dev/sdk';
 import Link from 'next/link';
 
 type Task = {
@@ -43,6 +44,7 @@ const TasksTab = () => {
   ]);
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
+  const [, setUserId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchasedTasks, setPurchasedTasks] = useState<{ 
     [key: string]: { 
@@ -69,28 +71,36 @@ const TasksTab = () => {
     return `${year}/${month}/${day}`;
 };
 
-  useEffect(() => {
-    const fetchPurchasedTasks = async () => {
-      try {
-        const userId = '1617526573'; // Replace with dynamic user ID if necessary
-        const result = await dynamoDB
-          .get({
-            TableName: 'invest',
-            Key: { UserID: userId },
-          })
-          .promise();
-  
-        if (result.Item) {
-          const purchased = result.Item.purchasedTasks || {}; // Assuming the purchased tasks are stored under 'purchasedTasks'
-          setPurchasedTasks(purchased);
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const { user } = WebApp.initDataUnsafe;
+    if (user) {
+      const userId = user.id.toString(); // Get the user ID
+      setUserId(userId); // Store the user ID in state
+
+      const fetchPurchasedTasks = async () => {
+        try {
+          const result = await dynamoDB
+            .get({
+              TableName: 'invest',
+              Key: { UserID: userId },
+            })
+            .promise();
+
+          if (result.Item) {
+            const purchased = result.Item.purchasedTasks || {}; // Assuming the purchased tasks are stored under 'purchasedTasks'
+            setPurchasedTasks(purchased);
+          }
+        } catch (error) {
+          console.error('Error fetching purchased tasks:', error);
         }
-      } catch (error) {
-        console.error('Error fetching purchased tasks:', error);
-      }
-    };
-  
-    fetchPurchasedTasks();
-  }, []);
+      };
+
+      fetchPurchasedTasks();
+    }
+  }
+}, []); // Runs once after the component mounts
+
   
 
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
