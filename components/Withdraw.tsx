@@ -16,7 +16,7 @@ AWS.config.update({
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 const Withdraw = () => {
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState<string | null>(null); // Fixed here
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [comment, setComment] = useState("");
