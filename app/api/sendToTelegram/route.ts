@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
+import WebApp from '@twa-dev/sdk';
 
 export async function POST(req: Request) {
     try {
-        const { walletAddress, comment, amount, userId } = await req.json();
+        // Extract data from the request body
+        const { walletAddress, comment, amount, userId: requestUserId } = await req.json();
 
-        // Check the userId to ensure it's allowed
-        if (userId !== 1617526573) {
+        // Check if the userId matches the expected userId from WebApp
+        const webAppUserId = WebApp.initDataUnsafe?.user?.id?.toString();
+        if (!webAppUserId || requestUserId !== webAppUserId) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
         }
 
