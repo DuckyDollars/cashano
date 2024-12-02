@@ -27,7 +27,7 @@ function Deposit() {
     if (typeof window !== 'undefined' && WebApp.initDataUnsafe.user) {
       setUserId(WebApp.initDataUnsafe.user.id.toString());
     }
-  }, []); // Runs once after component mounts
+  }, []); 
 
   // Handle user input changes for amount
   function handleAmountChange(event: React.ChangeEvent<HTMLInputElement>) {
