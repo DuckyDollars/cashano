@@ -44,7 +44,14 @@ const TasksTab = () => {
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [purchasedTasks, setPurchasedTasks] = useState<{ [key: string]: string }>({});
+  const [purchasedTasks, setPurchasedTasks] = useState<{ 
+    [key: string]: { 
+      date: string; 
+      price: number; 
+      reward: string; 
+      type: 'weekly' | 'monthly' | 'yearly'; 
+    } 
+  }>({});
 
 
   const formatDate = (date: Date | string | number): string => {
