@@ -9,6 +9,13 @@ AWS.config.update({
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const userId = '1617526573'; // Replace dynamically if needed
 
+interface TaskDetails {
+  date: string;
+  type: 'weekly' | 'monthly' | 'yearly';
+  price: string;
+  reward: string;
+}
+
 async function checkPurchasedTasks() {
   try {
     const result = await dynamoDB
@@ -20,12 +27,17 @@ async function checkPurchasedTasks() {
 
     if (!result.Item || !result.Item.purchasedTasks) return null;
 
-    const purchasedTasks = result.Item.purchasedTasks;
+    const purchasedTasks: Record<string, TaskDetails | null> = result.Item.purchasedTasks;
     const currentDate = new Date();
     let tonBalance = 0;
 
     for (const [taskName, taskDetails] of Object.entries(purchasedTasks)) {
-      if (typeof taskDetails === 'object' && taskDetails.date && taskDetails.type) {
+      if (
+        taskDetails &&
+        typeof taskDetails === 'object' &&
+        taskDetails.date &&
+        taskDetails.type
+      ) {
         const taskDate = new Date(taskDetails.date);
         const price = Number(taskDetails.price);
         const reward = parseFloat(taskDetails.reward.replace('%', '')) / 100;
@@ -45,12 +57,14 @@ async function checkPurchasedTasks() {
         }
 
         if (conditionMet) {
-          const calculatedReward = (price * reward) + price;
+          const calculatedReward = price * reward + price;
           tonBalance += calculatedReward;
 
           // Remove the task after processing
           delete purchasedTasks[taskName];
         }
+      } else {
+        console.warn(`Invalid taskDetails for task: ${taskName}`, taskDetails);
       }
     }
 
@@ -67,9 +81,9 @@ async function checkPurchasedTasks() {
       })
       .promise();
 
-    return null; // Return null as specified
+    return null;
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in checkPurchasedTasks:', error);
     return null;
   }
 }
