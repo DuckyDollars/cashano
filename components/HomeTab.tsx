@@ -89,7 +89,7 @@ const HomeTab = () => {
                 />
               </div>
               <div className="text-2xl font-bold">
-                {tonBalance !== null ? `${tonBalance.toFixed(2)}` : 'Loading...'}
+                {tonBalance !== null ? `${tonBalance}` : '0'}
               </div>
             </div>
             <div className="bg-white p-2">
@@ -105,7 +105,7 @@ const HomeTab = () => {
                   className="w-10 h-10 mx-auto"
                 />
               </div>
-              <div className="text-2xl font-bold">{income ? `${income.toFixed(2)}` : 'Loading...'}</div>
+              <div className="text-2xl font-bold">{income ? `${income}` : '0'}</div>
             </div>
             <div className="bg-black p-2">
               <div className="mt-0 text-lg font-semibold text-white">InCome</div>
