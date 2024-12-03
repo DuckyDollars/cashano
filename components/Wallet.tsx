@@ -8,12 +8,12 @@ import { TonCoin } from '@/images';
 import { TonConnectButton } from '@tonconnect/ui-react';
 import WebApp from '@twa-dev/sdk';
 
-// Configure AWS SDK
 AWS.config.update({
-  region: process.env.AWS_REGION,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'eu-north-1',
+  accessKeyId: 'AKIAUJ3VUKANTQKUIAXV', // Use secure environment variables
+  secretAccessKey: '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', // Use secure environment variables
 });
+
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
