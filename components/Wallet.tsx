@@ -7,6 +7,7 @@ import { TonCoin } from '@/images';
 import { TonConnectButton } from '@tonconnect/ui-react';
 import WebApp from '@twa-dev/sdk';
 import { useTab } from '@/contexts/TabContext'
+import NavigationBar from './NavigationBar'
 
 AWS.config.update({
   region: 'eu-north-1',
@@ -75,6 +76,7 @@ function Wallet() {
         </div>
         <p className="text-white">{tonBalance}</p>
       </div>
+      <NavigationBar />
     </div>
   );
 }

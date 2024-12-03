@@ -33,13 +33,13 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
             const initData = WebApp.initDataUnsafe;
 
             if (initData && initData.user) {
-                setActiveTab('deposit') // Show the deposit page
+                setActiveTab('load') // Show the deposit page
                 redirectToPage('home', 4000) // Redirect to home after 4 seconds
             } else {
-                setActiveTab('about') // Redirect to auth if not authenticated
+                setActiveTab('auth') // Redirect to auth if not authenticated
             }
         } else {
-            setActiveTab('about') // For non-Telegram environments, show About page
+            setActiveTab('auth') // For non-Telegram environments, show About page
         }
     }, [])
 

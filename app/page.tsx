@@ -2,7 +2,6 @@
 
 import WebApp from '@twa-dev/sdk';
 import { useEffect } from 'react';
-import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
 import TabContainer1 from '@/components/Referral';
 import TabContainer2 from '@/components/SaveData';
@@ -27,7 +26,6 @@ export default function Home() {
       <TabContainer3 />
       <main className="min-h-screen bg-black text-white">
         <TabContainer />
-        <NavigationBar />
       </main>
     </TabProvider>
   );

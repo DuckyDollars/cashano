@@ -3,4 +3,4 @@ export type IconProps = {
     className?: string;
 }
 
-export type TabType = 'home' | 'profile' | 'invest'| 'wallet'| 'friends' | 'withdraw' | 'deposit' | 'about';
+export type TabType = 'home' | 'profile' | 'invest'| 'wallet'| 'friends' | 'withdraw' | 'deposit' | 'about' | 'auth' | 'load';

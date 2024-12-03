@@ -1,10 +1,10 @@
 import React from 'react'
+import NavigationBar from './NavigationBar'
 
 export default function About() {
   return (
-    <div className='quest-tab-con transition-all justify-center duration-300 flex h-[5500px] bg-gradient-to-b from-green-500 to-teal-500 px-1'>
-  <div className='text-white text-center mt-10'>
-  <h1 className='text-[24px]'>1. Starter Package</h1>
+<div className="home-tab-con transition-all duration-300 flex items-center justify-start h-[5500px] flex-col bg-green-500">
+<h1 className='text-[24px]'>1. Starter Package</h1>
 <h3 className='text-[16px] mt-3'>Investment Duration: Bi-weekly, Monthly, Annually</h3>
 <h3 className='text-[18px] mt-3'>Entry Price: $500</h3>
 <h3 className='text-[18px] text-bold mt-3'>Expected Returns: </h3>
@@ -61,8 +61,8 @@ We apply a hands-on approach, constantly evaluating market trends and adjusting 
 As an Elite Package investor, your funds are actively managed by a team of top financial experts who work to ensure your investments grow exponentially. Our strategies involve aggressive capital deployment, and your returns are reinvested regularly to maximize compounding growth. With returns that can reach up to 75% annually, this package is ideal for those who want to make their wealth work at the highest possible level.
 
 This package offers unparalleled returns, and with the ability to compound every two weeks, every month, and annually, your investment grows rapidly over time. Your money works hard for you, giving you a strong competitive advantage in the market.</h3>
-  </div>
-</div>
+      <NavigationBar />
+    </div>
 
   )
 }

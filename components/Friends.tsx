@@ -6,6 +6,7 @@ import Image from 'next/image';
 import AWS from 'aws-sdk';
 import Home from '@/icons/clip'; // Assuming the icon is correctly imported
 import WebApp from '@twa-dev/sdk';
+import NavigationBar from './NavigationBar'
 
 // Setup AWS credentials - DO NOT hard-code them in production!
 AWS.config.update({
@@ -176,6 +177,7 @@ const FriendsTab = () => {
         )}
       </div>
       <div className="p-10 bg-transparent text-[1px]">.</div>
+      <NavigationBar />
     </div>
   );
 };

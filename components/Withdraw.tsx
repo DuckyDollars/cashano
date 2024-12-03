@@ -5,6 +5,7 @@ import AWS from 'aws-sdk';
 import { TonCoin } from '../images';
 import Image from 'next/image';
 import WebApp from '@twa-dev/sdk';
+import NavigationBar from './NavigationBar'
 
 // Configure AWS SDK
 AWS.config.update({
@@ -193,6 +194,7 @@ const Withdraw = () => {
                     {isSubmitting ? 'Sending...' : 'Send Request'}
                 </button>
             </div>
+            <NavigationBar />
         </div>
     );
 };

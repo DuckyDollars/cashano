@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
+import NavigationBar from './NavigationBar'
 
 // Configure AWS
 AWS.config.update({
@@ -170,6 +171,7 @@ function Deposit() {
           Generate Transaction
         </button>
       </div>
+      <NavigationBar />
     </div>
   );
 }

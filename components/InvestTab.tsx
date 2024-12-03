@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
 import { useTab } from '@/contexts/TabContext'
+import NavigationBar from './NavigationBar'
 
 type Task = {
   title: string;
@@ -291,6 +292,7 @@ useEffect(() => {
       >
       About Package
       </button>
+      <NavigationBar />
     </div>
   );
 };

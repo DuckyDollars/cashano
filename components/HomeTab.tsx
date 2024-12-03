@@ -8,6 +8,7 @@ import Invest from '@/icons/InvetLogo';
 import ArrowRight from '@/icons/ArrowRight';
 import TasksTab from './History'; // Import the TasksTab component
 import Header from './Header';
+import NavigationBar from './NavigationBar'
 
 const HomeTab = () => {
   const { setActiveTab } = useTab()
@@ -82,6 +83,7 @@ const HomeTab = () => {
         <div className="text-xl font-semibold">Recent Transactions</div>
       </div>
       <TasksTab />
+      <NavigationBar />
     </div>
   );
 };

@@ -9,6 +9,8 @@ import Profile from './Profile'
 import Withdraw from './Withdraw'
 import Deposit from './Deposit'
 import About from './About'
+import Auth from './auth'
+import Load from './Load'
 
 const TabContainer = () => {
     const { activeTab } = useTab()
@@ -38,6 +40,12 @@ const TabContainer = () => {
             </div>
             <div className={`${activeTab === 'about' ? 'is-show' : 'is-hide'}`}>
                 <About />
+            </div>
+            <div className={`${activeTab === 'auth' ? 'is-show' : 'is-hide'}`}>
+                <Auth />
+            </div>
+            <div className={`${activeTab === 'load' ? 'is-show' : 'is-hide'}`}>
+                <Load />
             </div>
         </div>
     )

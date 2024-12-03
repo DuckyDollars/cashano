@@ -3,6 +3,7 @@
 import WebApp from '@twa-dev/sdk'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import NavigationBar from './NavigationBar'
 
 // Define the interface for user data
 interface UserData {
@@ -45,6 +46,7 @@ const Profile = () => {
         <div>UserId</div>
         <div>{userData ? userData.id : 'Loading...'}</div>
       </div>
+      <NavigationBar />
     </div>
   )
 }
