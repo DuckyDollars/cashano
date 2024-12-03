@@ -14,7 +14,7 @@ const TabContainer = () => {
     const { activeTab } = useTab()
 
     return ( 
-        <div className="flex-1 overflow-auto max-w mx-auto">
+        <div className="flex-1 overflow-auto max-w mx-auto bg-gradient-to-t from-green-500 to-teal-500">
             <div className={`${activeTab === 'home' ? 'is-show' : 'is-hide'}`}>
                 <HomeTab />
             </div>
