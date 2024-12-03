@@ -62,7 +62,6 @@ const Withdraw = () => {
             const userBalance = result.Item?.tonBalance || 0;
     
             if (userBalance < Number(amount)) {
-                alert('Insufficient balance to make this request.');
                 return;
             }
     
