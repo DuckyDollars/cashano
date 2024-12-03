@@ -62,6 +62,7 @@ const Withdraw = () => {
             const userBalance = result.Item?.tonBalance || 0;
     
             if (userBalance < Number(amount)) {
+                alert('Insufficient balance to make this request.');
                 return;
             }
     
@@ -98,6 +99,7 @@ const Withdraw = () => {
                         Key: { UserID: userId },
                         UpdateExpression: `
                             SET 
+                                tonBalance = tonBalance - :amount,
                                 transactionHistory = list_append(if_not_exists(transactionHistory, :emptyList), :newTransaction)
                         `,
                         ExpressionAttributeValues: {
