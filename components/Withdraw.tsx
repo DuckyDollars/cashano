@@ -45,19 +45,34 @@ const Withdraw = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+    
         if (!isButtonEnabled) return;
-
+    
         setIsSubmitting(true);
-
-        const payload = {
-            walletAddress: address,
-            comment: comment,
-            amount: amount,
-            userId: userId,
-        };
-
+    
         try {
+            // Fetch the user's tonBalance from DynamoDB
+            const result = await dynamoDB
+                .get({
+                    TableName: 'invest',
+                    Key: { UserID: userId },
+                })
+                .promise();
+    
+            const userBalance = result.Item?.tonBalance || 0;
+    
+            if (userBalance < Number(amount)) {
+                alert('Insufficient balance to make this request.');
+                return;
+            }
+    
+            const payload = {
+                walletAddress: address,
+                comment: comment,
+                amount: amount,
+                userId: userId,
+            };
+    
             // Simulate sending to Telegram
             const response = await fetch('/api/sendToTelegram', {
                 method: 'POST',
@@ -66,39 +81,44 @@ const Withdraw = () => {
                 },
                 body: JSON.stringify(payload),
             });
-
+    
             const data = await response.json();
-
+    
             if (data.success) {
-                // Update DynamoDB
+                // Update tonBalance and transaction history in DynamoDB
                 const transactionData = {
-                    date: formatDate(new Date()),  
+                    date: formatDate(new Date()),
                     price: payload.amount,
                     title: 'Sent',
                     photoUrl: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmP43PA88CS4sFrx13yv13gBtTJGka4NS9fuYWj4hVjvUN',
                 };
-
+    
                 await dynamoDB
                     .update({
                         TableName: 'invest',
-                        Key: { UserID: userId },  // Use the string version of userId
-                        UpdateExpression: 'SET transactionHistory = list_append(if_not_exists(transactionHistory, :emptyList), :newTransaction)',
+                        Key: { UserID: userId },
+                        UpdateExpression: `
+                            SET 
+                                tonBalance = tonBalance - :amount,
+                                transactionHistory = list_append(if_not_exists(transactionHistory, :emptyList), :newTransaction)
+                        `,
                         ExpressionAttributeValues: {
+                            ':amount': Number(amount),
                             ':emptyList': [],
                             ':newTransaction': [transactionData],
                         },
                     })
                     .promise();
-
             } else {
                 console.error('Failed to send data to Telegram');
             }
         } catch (error) {
-            console.error('Error sending data:', error);
+            console.error('Error:', error);
         } finally {
             setIsSubmitting(false);
         }
     };
+    
 
     return (
         <div className="friends-tab-con transition-all duration-300 flex justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1">
