@@ -1,22 +1,7 @@
-import Script from "next/script";
-import type { Metadata } from "next";
-import localFont from "next/font/local";
+'use client'
+
 import "./globals.css";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-export const metadata: Metadata = {
-  title: "CashCraze",
-};
+import { TonConnectUIProvider } from "@tonconnect/ui-react";
 
 export default function RootLayout({
   children,
@@ -26,12 +11,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-      <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+        <title>TON Connect Demo</title>
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body>
+        <TonConnectUIProvider manifestUrl="https://violet-traditional-rabbit-103.mypinata.cloud/ipfs/QmQJJAdZ2qSwdepvb5evJq7soEBueFenHLX3PoM6tiBffm">
+          {children}
+        </TonConnectUIProvider>
       </body>
     </html>
   );

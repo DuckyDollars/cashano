@@ -18,7 +18,7 @@ const CheckFootprint = () => {
 
     return (
         <div className="flex justify-center w-full">
-            <div className="fixed top-0 w-full max-w-md px-4 py-3 bg-green-500 cursor-pointer">
+            <div className="fixed top-0 w-full max-w px-4 py-3 bg-green-500 cursor-pointer">
                 <div className="flex justify-between items-center pl-2">
                     <div className="text-base text-3xl text-white font-medium">CashCraze</div>
                     <Link href="/profile"> {/* Use Link for navigation */}

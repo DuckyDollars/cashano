@@ -7,11 +7,12 @@ import Wallet from '@/icons/Wallet';
 import Invest from '@/icons/InvetLogo';
 import ArrowRight from '@/icons/ArrowRight';
 import TasksTab from './History'; // Import the TasksTab component
+import Header from './Header';
 
 const HomeTab = () => {
   return (
     <div className="h-screen w-screen flex flex-col transition-all duration-300 bg-teal-500 pt-[54px]">
-      
+      <Header />
       <div className="w-full">
         <div className="flex w-full gap-4 bg-gradient-to-b from-green-500 to-teal-500 p-4">
           
@@ -82,7 +83,6 @@ const HomeTab = () => {
       {/* New Section with Black Background for Recent Transactions */}
       <div className="w-full bg-gradient-to-b from-green-500 to-teal-500 text-white p-4">
         <div className="text-xl font-semibold">Recent Transactions</div>
-        {/* You can add recent transactions content here */}
       </div>
       <TasksTab />
     </div>
