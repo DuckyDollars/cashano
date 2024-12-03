@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link'; // Import Link from Next.js
 import { TonCoin } from '@/images';
 import Wallet from '@/icons/Wallet';
 import Invest from '@/icons/InvetLogo';
@@ -58,7 +57,6 @@ const HomeTab = () => {
       {/* New Section with White Background and Buttons */}
       <div className="w-full bg-gradient-to-t from-green-500 to-teal-500 px-4 py-8">
         <div className="space-y-3">
-          <Link href="/invest">
             <button className="shine-effect w-full bg-[green] border-[2px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between">
               <div className="flex items-center gap-3 font-medium">
                 <Invest className="w-8 h-8" />
@@ -66,9 +64,7 @@ const HomeTab = () => {
               </div>
               <ArrowRight className="w-6 h-6 text-gray-400" />
             </button>
-          </Link>
 
-          <Link href="/wallet">
             <button className="w-full bg-[green] border-[2px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between mt-3">
               <div className="flex items-center gap-3 font-medium">
                 <Wallet className="w-8 h-8" />
@@ -76,7 +72,6 @@ const HomeTab = () => {
               </div>
               <ArrowRight className="w-6 h-6 text-gray-400" />
             </button>
-          </Link>
         </div>
       </div>
 

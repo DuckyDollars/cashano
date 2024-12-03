@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
-import Link from 'next/link';
 
 type Task = {
   title: string;
@@ -283,11 +282,11 @@ useEffect(() => {
   </div>
 ))}
       </div>
-      <Link href={'/about'}
+      <button
       className="mt-2 w-full py-3 bg-blue-500 text-white rounded-lg text-center font-semibold"
-    >
+      >
       About Package
-    </Link>
+      </button>
     </div>
   );
 };
