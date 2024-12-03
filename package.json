@@ -26,6 +26,7 @@
     "emailjs-com": "^3.2.0",
     "handlebars": "^4.7.8",
     "install": "^0.13.0",
+    "jose": "^5.9.6",
     "next": "14.2.16",
     "nodemailer": "^6.9.16",
     "npm": "^10.9.1",
