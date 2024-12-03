@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import WebApp from '@twa-dev/sdk';
 import AWS from 'aws-sdk';
 
 AWS.config.update({
@@ -7,7 +11,6 @@ AWS.config.update({
 });
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const userId = '1617526573'; // Replace dynamically if needed
 
 interface TaskDetails {
   date: string;
@@ -16,7 +19,7 @@ interface TaskDetails {
   reward: string;
 }
 
-async function checkPurchasedTasks() {
+async function checkPurchasedTasks(userId: string) {
   try {
     const result = await dynamoDB
       .get({
@@ -88,4 +91,20 @@ async function checkPurchasedTasks() {
   }
 }
 
-export default checkPurchasedTasks;
+export default function App() {
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && WebApp.initDataUnsafe.user) {
+      setUserId(WebApp.initDataUnsafe.user.id.toString());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      checkPurchasedTasks(userId);
+    }
+  }, [userId]);
+
+  return null;
+}
