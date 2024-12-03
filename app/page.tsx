@@ -8,11 +8,11 @@ import { TabProvider } from '@/contexts/TabContext'
 export default function Home() {
   return (
     <TabProvider>
+    <TabContainer1 />
+    <TabContainer2 />
+    <TabContainer3 />
       <main className="min-h-screen bg-black text-white">
         <TabContainer />
-        <TabContainer1 />
-        <TabContainer2 />
-        <TabContainer3 />
         <NavigationBar />
       </main>
     </TabProvider>

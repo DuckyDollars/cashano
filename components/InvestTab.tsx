@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AWS from 'aws-sdk';
 import WebApp from '@twa-dev/sdk';
+import { useTab } from '@/contexts/TabContext'
 
 type Task = {
   title: string;
@@ -21,6 +22,9 @@ AWS.config.update({
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 const TasksTab = () => {
+
+  const { setActiveTab } = useTab()
+
   const [tasks] = useState<Task[]>([
     { title: 'W Starter Package', price: 73, reward: '4', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
     { title: 'W Growth Package', price: 220, reward: '6', type: 'weekly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmXaUMRP7oLpfXsw4b78u3Jf6PxYStfFFYWUcp2d2g4RUg' },
@@ -41,8 +45,8 @@ const TasksTab = () => {
     { title: 'A Premium Package', price: 2201, reward: '60', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
     { title: 'A Elite Package', price: 7356, reward: '75', type: 'yearly', icon: 'https://brown-just-donkey-162.mypinata.cloud/ipfs/QmNqEvPnJXMFcvApDaXLKZ7SHmsDer344v962G4Hf1cBbn' },
   ]);
-  const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
+  const [activeTab, setActiveTab1] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+  const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null); 
   const [userId, setUserId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchasedTasks, setPurchasedTasks] = useState<{ 
@@ -105,7 +109,7 @@ useEffect(() => {
   const filteredTasks = tasks.filter((task) => task.type === activeTab);
 
   const handleTabSwitch = (tab: 'weekly' | 'monthly' | 'yearly') => {
-    setActiveTab(tab);
+    setActiveTab1(tab);
     setActiveTaskIndex(null);
   };
 
@@ -282,7 +286,7 @@ useEffect(() => {
   </div>
 ))}
       </div>
-      <button
+      <button onClick={() => setActiveTab('about')}
       className="mt-2 w-full py-3 bg-blue-500 text-white rounded-lg text-center font-semibold"
       >
       About Package

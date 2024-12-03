@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import WebApp from '@twa-dev/sdk'
+import WebApp from '@twa-dev/sdk' 
+import { useTab } from '@/contexts/TabContext'
 
 const CheckFootprint = () => {
     const [profilePhoto, setProfilePhoto] = useState<string | null>(null)
+    const { setActiveTab } = useTab()
 
     useEffect(() => {
         // Check if the code is running in the browser (window is defined)
@@ -21,9 +22,7 @@ const CheckFootprint = () => {
             <div className="fixed top-0 w-full max-w px-4 py-3 bg-green-500 cursor-pointer">
                 <div className="flex justify-between items-center pl-2">
                     <div className="text-base text-3xl text-white font-medium">CashCraze</div>
-                    <Link href="/profile"> {/* Use Link for navigation */}
-                        <button className="bg-[#0000000] rounded-full px-2 py-1">
-                            {/* Use the profile picture */}
+                        <button onClick={() => setActiveTab('profile')} className="bg-[#0000000] rounded-full px-2 py-1">
                             <Image
                                 src={profilePhoto || '/default-profile.png'} // Fallback to default image if no profile photo is set
                                 alt="Profile"
@@ -32,7 +31,6 @@ const CheckFootprint = () => {
                                 height={28}
                             />
                         </button>
-                    </Link>
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTab } from '@/contexts/TabContext'
 import { TonCoin } from '@/images';
 import Wallet from '@/icons/Wallet';
 import Invest from '@/icons/InvetLogo';
@@ -9,6 +10,7 @@ import TasksTab from './History'; // Import the TasksTab component
 import Header from './Header';
 
 const HomeTab = () => {
+  const { setActiveTab } = useTab()
   return (
     <div className="h-screen w-screen flex flex-col transition-all duration-300 bg-teal-500 pt-[54px]">
       <Header />
@@ -57,7 +59,7 @@ const HomeTab = () => {
       {/* New Section with White Background and Buttons */}
       <div className="w-full bg-gradient-to-t from-green-500 to-teal-500 px-4 py-8">
         <div className="space-y-3">
-            <button className="shine-effect w-full bg-[green] border-[2px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between">
+            <button onClick={() => setActiveTab('invest')} className="shine-effect w-full bg-[green] border-[2px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between">
               <div className="flex items-center gap-3 font-medium">
                 <Invest className="w-8 h-8" />
                 <span>Invest Now</span>
@@ -65,7 +67,7 @@ const HomeTab = () => {
               <ArrowRight className="w-6 h-6 text-gray-400" />
             </button>
 
-            <button className="w-full bg-[green] border-[2px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between mt-3">
+            <button onClick={() => setActiveTab('wallet')} className="w-full bg-[green] border-[2px] border-[#2d2d2e] rounded-lg px-4 py-2 flex items-center justify-between mt-3">
               <div className="flex items-center gap-3 font-medium">
                 <Wallet className="w-8 h-8" />
                 <span>Connect Wallet</span>
