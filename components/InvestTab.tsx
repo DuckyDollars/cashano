@@ -157,7 +157,7 @@ useEffect(() => {
           date: formatDate(new Date()), // Using the formatted date
           price: activeTask.price,
           title: activeTask.title,
-          photoUrl: "https://brown-just-donkey-162.mypinata.cloud/ipfs/QmfFXvEm29S9WjqGZfKSRQzLKALpejN3ZuPQh149AZAdvr",
+          photoUrl: activeTask.icon,
         };
   
         // Add a new record to purchasedTasks
