@@ -21,10 +21,16 @@ AWS.config.update({
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
+// Define the type for the Task
+interface Task {
+  price: number;
+  reward: number;
+}
+
 const HomeTab = () => {
   const { setActiveTab } = useTab();
-  const [tonBalance, setTonBalance] = useState(null);
-  const [income, setIncome] = useState(0);
+  const [tonBalance, setTonBalance] = useState<number | null>(null);
+  const [income, setIncome] = useState<number>(0);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,11 +54,13 @@ const HomeTab = () => {
       }
     };
 
-    fetchBalance();
-  }, []);
+    if (userId) {
+      fetchBalance();
+    }
+  }, [userId]);
 
   // Function to calculate the total income based on purchased tasks
-  const calculateIncome = (purchasedTasks) => {
+  const calculateIncome = (purchasedTasks: { [key: string]: Task }) => {
     let totalIncome = 0;
     
     for (let taskKey in purchasedTasks) {
