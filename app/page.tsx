@@ -1,4 +1,5 @@
 import WebApp from '@twa-dev/sdk';
+import { useEffect } from 'react';
 import NavigationBar from '@/components/NavigationBar';
 import TabContainer from '@/components/TabContainer';
 import TabContainer1 from '@/components/Referral';
@@ -7,14 +8,15 @@ import TabContainer3 from '@/components/InvestSystem';
 import { TabProvider } from '@/contexts/TabContext';
 
 export default function Home() {
-  // Apply colors using WebApp methods from the @twa-dev/sdk
-  WebApp.themeParams.bg_color = '#48bb78';
-  WebApp.setHeaderColor('#48bb78');
-  WebApp.setBackgroundColor('#48bb78');
-
-  if (WebApp.setBottomBarColor) {
-    WebApp.setBottomBarColor('#000000'); // Ensure compatibility with Bot API 7.10+
-  }
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      WebApp.setHeaderColor('#48bb78');
+      WebApp.setBackgroundColor('#48bb78');
+      if (WebApp.setBottomBarColor) {
+        WebApp.setBottomBarColor('#000000');
+      }
+    }
+  }, []); // Runs only on the client
 
   return (
     <TabProvider>
