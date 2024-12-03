@@ -44,7 +44,7 @@ const TasksTab = () => {
   ]);
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   const [activeTaskIndex, setActiveTaskIndex] = useState<number | null>(null);
-  const [, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchasedTasks, setPurchasedTasks] = useState<{ 
     [key: string]: { 
@@ -75,8 +75,8 @@ useEffect(() => {
   if (typeof window !== 'undefined') {
     const { user } = WebApp.initDataUnsafe;
     if (user) {
-      const userId = user.id.toString(); // Get the user ID
-      setUserId(userId); // Store the user ID in state
+      const userId = user.id.toString();
+      setUserId(userId); 
 
       const fetchPurchasedTasks = async () => {
         try {
@@ -128,7 +128,9 @@ useEffect(() => {
     if (activeTaskIndex === null) return;
   
     const activeTask = filteredTasks[activeTaskIndex];
-    const userId = '1617526573'; // Replace with dynamic user ID if necessary
+    if (typeof window !== 'undefined' && WebApp.initDataUnsafe.user) {
+      setUserId(WebApp.initDataUnsafe.user.id.toString());
+    }
   
     if (purchasedTasks[activeTask.title]) return; // Prevent duplicate purchases
   
