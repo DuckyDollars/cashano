@@ -54,7 +54,7 @@ function Wallet() {
   return (
     <div className="home-tab-con transition-all duration-300 flex items-center justify-start h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500">
       <TonConnectButton className="bg-transparent text-black w-[35%] py-1 mt-5 rounded-lg" />
-      <div className="text-white text-4xl mt-4">{tonBalance} TON</div>
+      <div className="text-white text-4xl mt-4">{tonBalance}TON</div>
       <div className="flex justify-between w-[35%] mt-8">
         <button onClick={() => setActiveTab('deposit')} className="flex flex-col items-center justify-center">
           <div className="bg-green-900 w-[50px] h-[50px] rounded-full flex items-center justify-center">

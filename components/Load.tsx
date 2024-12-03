@@ -5,7 +5,7 @@ import Image from 'next/image';
 function Load() {
   return (
     <div
-      className="friends-tab-con transition-all duration-300 flex justify-center items-center h-screen flex-col bg-gradient-to-b from-green-500 to-teal-500 px-1"
+      className="friends-tab-con transition-all duration-300 flex justify-center items-center h-screen flex-col bg-green-500 px-1"
       style={{
         position: 'relative',
         display: 'flex',
