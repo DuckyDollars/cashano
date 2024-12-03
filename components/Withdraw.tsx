@@ -98,7 +98,6 @@ const Withdraw = () => {
                         Key: { UserID: userId },
                         UpdateExpression: `
                             SET 
-                                tonBalance = tonBalance - :amount,
                                 transactionHistory = list_append(if_not_exists(transactionHistory, :emptyList), :newTransaction)
                         `,
                         ExpressionAttributeValues: {
