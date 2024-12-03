@@ -175,6 +175,7 @@ const FriendsTab = () => {
           ))
         )}
       </div>
+      <div className="p-6 bg-transparent text-[1px]">.</div>
     </div>
   );
 };
