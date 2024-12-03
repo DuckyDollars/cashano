@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
 import Image from 'next/image';
-import { TonCoin } from '@/images';
+import { logo } from '@/images';
 import WebApp from '@twa-dev/sdk';
 
 AWS.config.update({
@@ -90,11 +90,11 @@ const TasksTab = () => {
           <div className="mt-8 mb-2">
             <div className="bg-[#151516] w-full rounded-2xl p-8 flex flex-col items-center">
               <Image
-                src={TonCoin}
+                src={logo}
                 alt=""
                 width={171}
                 height={132}
-                className="mb-4"
+                className="mb-4 rounded-full"
               />
               <p className="text-xl text-[#8e8e93] text-center">
                 There is nothing else.<br />
