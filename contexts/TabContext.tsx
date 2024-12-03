@@ -14,21 +14,34 @@ const TabContext = createContext<TabContextType | undefined>(undefined)
 export function TabProvider({ children }: { children: React.ReactNode }) {
     const [activeTab, setActiveTab] = useState<TabType>('home')
 
+    const redirectToPage = (tab: TabType, delay: number) => {
+        setTimeout(() => {
+            setActiveTab(tab)
+        }, delay)
+    }
+
+    const isTelegramDesktop = () => {
+        return /TelegramDesktop/i.test(navigator.userAgent)
+    }
+
+    const isMobileOrTablet = () => {
+        return /Mobi|Tablet/i.test(navigator.userAgent)
+    }
+
     useEffect(() => {
-        const isTelegram = WebApp.initDataUnsafe && WebApp.initDataUnsafe.query_id;
+        if (isTelegramDesktop() || isMobileOrTablet()) {
+            const initData = WebApp.initDataUnsafe;
 
-        if (isTelegram) {
-            setActiveTab('deposit');
-            const timer = setTimeout(() => {
-                setActiveTab('home');
-            }, 4000);
-
-            // Cleanup timer when component unmounts
-            return () => clearTimeout(timer);
+            if (initData && initData.user) {
+                setActiveTab('deposit') // Show the deposit page
+                redirectToPage('home', 4000) // Redirect to home after 4 seconds
+            } else {
+                setActiveTab('about') // Redirect to auth if not authenticated
+            }
         } else {
-            setActiveTab('about');
+            setActiveTab('about') // For non-Telegram environments, show About page
         }
-    }, []);
+    }, [])
 
     return (
         <TabContext.Provider value={{ activeTab, setActiveTab }}>
